@@ -1,0 +1,11 @@
+requests:
+  pip install requests
+
+pymysql:
+  pip install pymysql
+
+yaml:
+  pip install pyyaml
+
+pytest-rerunfailures:
+  pip install pytest-rerunfailures
