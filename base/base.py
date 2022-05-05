@@ -13,6 +13,7 @@ from common.log import Cluster_log
 from common.mysql import Mysql
 from common.path import mysql_dir, jd_log_dir, jd_api_dir, dirs, url_dir, url_config_dir
 from common.readYaml import readYaml
+from jira_remind.issou import *
 
 
 class Base(Mysql):
@@ -119,10 +120,9 @@ class Base(Mysql):
         return time.time() * 1000
 
 
-if __name__ == '__main__':
-    f = Base('kk_mysql', '1', 'jd_api', 'kk_prod')
-    ff = {"method": "post", "url": "http://10.74.51.251:8010/user-center/user/login",
-          "json": {"timeout": 3000, "userName": "jd_admin",
-                   "password": "73b515a26358508c672842dedea60763c8be8e00123d35095bb3f3e9c9fa8f44"}}
 
-    print(f.getToken(f.url['login']))
+
+if __name__ == '__main__':
+        f = Base('mysql', '1', 'jd_api', 'sy_test')
+        print(select_issou())
+        f.vx_inform(select_issou())
