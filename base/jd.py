@@ -12,7 +12,7 @@ from base.base import Base
 
 class Jd(Base):
 
-    def receivePicking(self, tag):
+    def receivePicking(self, tag: int):
         """
         下单
         :param tag: 任务类型
@@ -25,7 +25,7 @@ class Jd(Base):
         receivePicking = self.re1(self.url['receivePicking'])
         self.info(f'下单结果：{receivePicking.json()}')
 
-    def picking(self, sql):
+    def picking(self, sql: str):
         """
         拣货确认
         :param sql: 查询到达拣货点
@@ -44,7 +44,7 @@ class Jd(Base):
                 pickStationFinish = self.re1(self.url['pickStationFinish'])
                 self.info(f'拣货结果：{pickStationFinish.json()}')
 
-    def unload(self, sql):
+    def unload(self, sql: str):
         """
         到达卸货点
         :param sql: 查询到达卸货点
@@ -74,8 +74,12 @@ class Jd(Base):
                 #             self.receivePicking(1)
                 #             break
 
-    def robot_start(self, resourceId):
-        """查询机器人状态"""
+    def robot_start(self, resourceId: str):
+        """
+        查询指定机器人状态
+        :param resourceId: 机器人编号获取创建机器人生成的随机数
+        :return:
+        """
         # resourceId 随机生成.映射robot
         robot = {"018": "81b5a771-e7af-4eff-b2d7-0124cd820e23"}
         self.url['jobs']['url'] = str(self.url['jobs']['url']).replace(
@@ -86,17 +90,26 @@ class Jd(Base):
     def count_task(self):
         """统计任务数量"""
         t = int(time.mktime(datetime.date.today().timetuple()) * 1000)
-
         self.url['page']['json']['lastFinishTime'][0] = t - 21600000
         self.url['page']['json']['lastFinishTime'][1] = t + 64800000
         self.url['page']['json']['lastFinishTimeBegin'] = t - 21600000
         self.url['page']['json']['lastFinishTimeEnd'] = t + 64800000
         re = self.re1(self.url['page']).json()['result']['totalCount']
+        return re
 
+    def count_2_task(self):
+        t = int(time.mktime(datetime.date.today().timetuple()) * 1000)
+        self.url['page']['json']['createStartTime'] = t - 21600000
+        self.url['page']['json']['createEndTime'] = t + 64800000
+        re = self.re1(self.url['page']).json()['result']['totalCount']
         return re
 
     def unload_amr(self):
-        """1.0卸货&停车"""
+        """1.0
+        通过机器人目标点及机器人状态判断是否到达
+        到达拣货点：拣货
+        到达停车区：下单
+        """
         url = 'http://192.168.98.198:8070/robotManager/getRobotList'
         headers = {"Content-Type": "application/json"}
         json = {"timeout": 3000, "pageNumber": 1, "pageSize": 100, "robotCode": "", "mapName": ""}
