@@ -1,3 +1,5 @@
-import time
+import time,datetime
 
-print(time.time()*1000+(1000*60*5))
+print(int(time.mktime(datetime.date.today().timetuple())*1000))
+yesterday = (datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")
+print(yesterday)

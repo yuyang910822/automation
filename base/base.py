@@ -38,6 +38,8 @@ class Base(Mysql):
                 self.url[url]['url'] = str(self.url[url]['url']).replace('/rpm/', localhost[0])
             elif 'rcs' in self.url[url]['url']:
                 self.url[url]['url'] = str(self.url[url]['url']).replace('/rcs/', localhost[1])
+            elif 'erms' in self.url[url]['url']:
+                self.url[url]['url'] = str(self.url[url]['url']).replace('/erms/', localhost[2])
             else:
                 self.error(f"未替换：{self.url[url]['url']}")
 
@@ -60,9 +62,10 @@ class Base(Mysql):
         :return: 响应信息
         """
         times = int(time.time() * 1000)
-        self.info(f'{info["url"]}--|{times}|>>>>>{info["json"]}')
+
+        self.info(f'{str(info["url"]).split("/")[-1]}--|{times}|>>>>>{info["json"]}')
         r = requests.request(**info)
-        self.info(f'{info["url"]}--|{times}|<<<<<{r.json()}')
+        self.info(f'{str(info["url"]).split("/")[-1]}--|{times}|<<<<<{r.json()}')
         return r
 
     def setProperties(self, name: str) -> int:
@@ -109,16 +112,15 @@ class Base(Mysql):
     @staticmethod
     def getTime():
         """
-        获取日期时间
+        获取时间
         :return:
         """
-        return time.strftime("%H%M%S")
+        return int(time.strftime("%H"))
 
-    @staticmethod
-    def getTimeStamp(self):
+    def getTimeStamp(self) -> int:
         """时间戳"""
-        return time.time() * 1000
-
+        t = int(time.time() * 1000)
+        return t
 
 
 
