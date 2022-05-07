@@ -95,27 +95,22 @@ class Jd(Base):
 
         return re
 
-    def amr_start(self, ids):
-        """1.0拣货完成查询AMR状态"""
-        json = {"timeout": 3000, "pageNumber": 1, "pageSize": 100, "robotCode": ids, "mapName": ""}
-        url = 'http://rcs.jd.test.be.hwc.forwardx.com/robotManager/getRobotList'
-        re = requests.post(url, json=json)
-        print(re.json()['result']['items'])
-
     def unload_amr(self):
-        """1.0到达"""
+        """1.0卸货&停车"""
         url = 'http://192.168.98.198:8070/robotManager/getRobotList'
         headers = {"Content-Type": "application/json"}
         json = {"timeout": 3000, "pageNumber": 1, "pageSize": 100, "robotCode": "", "mapName": ""}
         re = requests.post(url, headers=headers, json=json).json()
         for amr_start in re['result']['items']:
-            if amr_start['baseStatus'] == '到达':
+            # AMR在线且到达状态
+            if amr_start['baseStatus'] == '到达' and amr_start['online'] == True :
+                # 到达目标点为卸货点
                 if amr_start['currentTargetName'][0:3] == '卸货点':
                     self.url['freedAMR']['json']['robotCode'] = amr_start['robotCode']
                     freedAMR = self.re1(self.url['freedAMR'])
                     self.info(f'卸货结果：{freedAMR.json()}')
-
-            if amr_start['baseStatus'] == '空闲' and amr_start['currentTargetName'][0:3] == '停车区':
+            # AMR在线且目标点为停车区且空闲
+            if amr_start['baseStatus'] == '空闲' and amr_start['currentTargetName'][0:3] == '停车区' and amr_start['online'] == True:
                 time.sleep(3)
                 self.info('到达停车区')
                 self.receivePicking(1)
