@@ -55,9 +55,6 @@ class Jd(Base):
         if len(unload_arrive) >= 1:
             self.info(f'到达卸货点信息：{unload_arrive}')
             for amrid in unload_arrive:
-                # # 卸货前生成拣货任务
-                # self.receivePicking(1)
-                # time.sleep(3)
                 self.url['freedAMR']['json']['robotCode'] = amrid[0]
                 freedAMR = self.re1(self.url['freedAMR'])
                 self.info(f'卸货结果：{freedAMR.json()}')
@@ -66,10 +63,16 @@ class Jd(Base):
                 # for i in range(10):
                 #     time.sleep(6)
                 #     # print(jsonpath.jsonpath(self.robot_start(amrid[0]), '$..name'))
-                #     if jsonpath.jsonpath(self.robot_start(amrid[0]), '$..name'):
-                #         self.info('前往停车区')
-                #         self.receivePicking(1)
-                #         break
+                #     data = jsonpath.jsonpath(self.robot_start(amrid[0]), '$..name')
+                #     if data:
+                #         if data[0][0:2] == 'go':
+                #             self.info('前往停车区')
+                #             self.receivePicking(1)
+                #             break
+                #         if data[0][0:2] == 'go':
+                #             self.info('前往充电区')
+                #             self.receivePicking(1)
+                #             break
 
     def robot_start(self, resourceId):
         """查询机器人状态"""
@@ -99,3 +102,20 @@ class Jd(Base):
         re = requests.post(url, json=json)
         print(re.json()['result']['items'])
 
+    def unload_amr(self):
+        """1.0到达"""
+        url = 'http://192.168.98.198:8070/robotManager/getRobotList'
+        headers = {"Content-Type": "application/json"}
+        json = {"timeout": 3000, "pageNumber": 1, "pageSize": 100, "robotCode": "", "mapName": ""}
+        re = requests.post(url, headers=headers, json=json).json()
+        for amr_start in re['result']['items']:
+            if amr_start['baseStatus'] == '到达':
+                if amr_start['currentTargetName'][0:3] == '卸货点':
+                    self.url['freedAMR']['json']['robotCode'] = amr_start['robotCode']
+                    freedAMR = self.re1(self.url['freedAMR'])
+                    self.info(f'卸货结果：{freedAMR.json()}')
+
+            if amr_start['baseStatus'] == '空闲' and amr_start['currentTargetName'][0:3] == '停车区':
+                time.sleep(3)
+                self.info('到达停车区')
+                self.receivePicking(1)

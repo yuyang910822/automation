@@ -9,9 +9,7 @@
 -------------------------------------------------
 """
 
-import jsonpath as jsonpath
 import time
-from base.base import Base
 from base.jd import Jd
 from common.vx import vx_inform
 
@@ -49,7 +47,6 @@ class Sy(Jd):
                 self.start = 0
 
 
-
 if __name__ == '__main__':
-    auto = Sy('mysql', 'test_水印', 'jd_api', 'sy_test')
-    auto.amr_start('001')
+    auto = Sy('mysql', 'test_水印', 'jd_api', 'sy_prod')
+    auto.unload_amr()
