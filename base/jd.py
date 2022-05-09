@@ -2,11 +2,10 @@
 # @Time : 2022/5/5 17:07 
 # @Author : Yu yang
 # @File : jd.py
-import time, datetime
 
-import jsonpath
+import datetime
+import time
 import requests
-
 from base.base import Base
 
 

@@ -7,17 +7,17 @@ class ExcelClass:
     def __init__(self, filePath: str, sheetName: str):
         """
         创建excel对象
-        :param fileName: 文件完整路径
+        :param filePath: 文件完整路径
         :param sheetName: sheet名称
         """
-        self.workbook = openpyxl.load_workbook(fileName)
+        self.workbook = openpyxl.load_workbook(filePath)
         self.sheetName = sheetName
 
     def close(self):
         """关闭工作薄对象，释放内存"""
         self.workbook.close()
 
-    def readDada(self) -> dict:
+    def readDada(self) -> list:
         """
         读取数据生成测试数据
         :return:

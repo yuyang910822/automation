@@ -9,6 +9,7 @@ pyyaml = "*"
 pymysql = "*"
 jsonpath = "*"
 jira = "*"
+openpyxl = "*"
 
 [dev-packages]
 

@@ -4,14 +4,11 @@
 # @File : runtiest.py
 import os
 import time
-
-import jsonpath
 import requests
-from requests import Response
 
-from common.log import Cluster_log
+from requests import Response
 from common.mysql import Mysql
-from common.path import mysql_dir, jd_log_dir, jd_api_dir, dirs, url_dir, url_config_dir
+from common.path import mysql_dir, url_dir, url_config_dir
 from common.readYaml import readYaml
 from jira_remind.issou import *
 
@@ -20,6 +17,9 @@ class Base(Mysql):
     """
     公共方法层,业务层继承基类，方便调用
     """
+
+    # def __new__(cls, *args, **kwargs):
+    #     pass
 
     def __init__(self, db_name: str, log_name: str, url_file_name: str, host: str):
         """

@@ -8,11 +8,13 @@
   @Motto: ABC(Always Be Coding)
 -------------------------------------------------
 """
-
+from datetime import datetime
+import time,datetime
 import jsonpath as jsonpath
 import time
 from base.base import Base
 from base.jd import Jd
+from common.runemail import runEmail
 from common.vx import vx_inform
 
 
@@ -37,11 +39,14 @@ class Sy(Jd):
             self.unload_amr()
 
             # 企业微信输出测试结果
-            if self.getTime() == 18 and self.start == 0:
-                vx_inform(f'今日京东水印流程自动化测试完成：\n'
-                          f'开始时间--结束时间\n'
-                          f'   0       24  \n'
-                          f'共执行任务数量：{self.count_task()}')
+            if self.getTime() == 13 and self.start == 0:
+                task_quantity = self.count_task()
+                info = f'今日京东水印流程稳定性测试完成：\n'\
+                       f'开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00'\
+                       f':00）\n结束时间（{self.getDateTime()}）\n'\
+                       f'共执行任务数量：{task_quantity}单\n'\
+                       f'平均耗时：{int(1440 / task_quantity)}分'
+                runEmail(info, ''.join(['【京东1.0水印仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
                 print('测试报告已发出，更新状态')
                 self.start = 1
             elif self.getTime() == 0 and self.start == 1:
