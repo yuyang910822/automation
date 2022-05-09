@@ -9,16 +9,15 @@
 -------------------------------------------------
 """
 from datetime import datetime
-import time,datetime
-import jsonpath as jsonpath
+import datetime
 import time
-from base.base import Base
 from base.jd import Jd
 from common.runemail import runEmail
 from common.vx import vx_inform
 
 
 class Sy(Jd):
+
     # 未发出报告
     start = 0
 
@@ -39,16 +38,28 @@ class Sy(Jd):
             self.unload_amr()
 
             # 企业微信输出测试结果
-            if self.getTime() == 13 and self.start == 0:
-                task_quantity = self.count_task()
-                info = f'今日京东水印流程稳定性测试完成：\n'\
-                       f'开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00'\
-                       f':00）\n结束时间（{self.getDateTime()}）\n'\
-                       f'共执行任务数量：{task_quantity}单\n'\
-                       f'平均耗时：{int(1440 / task_quantity)}分'
-                runEmail(info, ''.join(['【京东1.0水印仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
-                print('测试报告已发出，更新状态')
-                self.start = 1
+            if self.getTime() == 14 and self.start == 0:
+                task_quantity = self.count_2_task()
+                if task_quantity != 0:
+                    info = f'今日京东水印流程稳定性测试完成：\n'\
+                           f'开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00'\
+                           f':00）\n结束时间（{self.getDateTime()}）\n'\
+                           f'共执行任务数量：{task_quantity}单,拣货点：{self.station_number}个\n'\
+                           f'平均耗时：{int(1440 / task_quantity)}分' \
+
+                    runEmail(info, ''.join(['【京东1.0水印仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
+                    print('测试报告已发出，更新状态')
+                    self.start = 1
+                    self.station_number = 0
+                elif task_quantity == 0:
+                    info = f'今日京东水印流程稳定性测试完成：\n' \
+                           f'开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00' \
+                           f':00）\n结束时间（{self.getDateTime()}）\n' \
+                           f'共执行任务数量：{task_quantity}单,拣货点：{self.station_number}个\n'
+                    runEmail(info, ''.join(['【京东1.0水印仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
+                    print('测试报告已发出，更新状态，任务数量：{}'.format(task_quantity))
+                    self.start = 1
+                    self.station_number = 0
             elif self.getTime() == 0 and self.start == 1:
                 print('重新开始，初始化状态')
                 self.start = 0

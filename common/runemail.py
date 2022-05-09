@@ -33,11 +33,12 @@ def runEmail(file, title):
     Email发送
     :return:
     """
-    file = open(file, 'rb')
-    file_data = str(file.read())
-    file.close()
-    print(file_data)
-    body = MIMEText(file_data, 'plain', 'utf8')
+    # file = open(file, 'rb')
+    # file_data = str(file.read())
+    # file.close()
+    # print(file_data)
+    print(file)
+    body = MIMEText(file, 'plain', 'utf8')
 
     # 构造邮件主体
     mail_server = "smtp.exmail.qq.com"

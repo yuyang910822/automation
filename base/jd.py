@@ -4,12 +4,41 @@
 # @File : jd.py
 
 import datetime
+import random
 import time
+
+import jsonpath
 import requests
 from base.base import Base
 
 
 class Jd(Base):
+
+    # 拣货点数量
+    station_number = 0
+
+    def receivePicking1(self, tag: int):
+        """
+        下单
+        :param tag: 任务类型
+        :return:
+        """
+        t = self.getTimeStamp()
+        self.url['receivePicking']['json']['taskNo'] = t
+        self.url['receivePicking']['json']['tagType'] = tag
+        self.url['receivePicking']['json']['cutOffTime'] = t + (60000 * 10)
+        staion = ['01-01', '07-01', '013-01', '02-01', '08-01', '014-01',
+                  '03-01', '09-01', '015-01', '04-01', '010-01', '016-01',
+                  '05-01', '011-01', '017-01', '06-01', '012-01', '018-01', ]
+        data = []
+        for i in range(1, 10):
+            data.append(staion[random.randint(0, 17)])
+        data = list(set(data))
+        self.url['receivePicking']['json']['detailList'] = data
+
+        receivePicking = self.re1(self.url['receivePicking'])
+        self.info(f'下单结果：{receivePicking.json()}')
+        return receivePicking
 
     def receivePicking(self, tag: int):
         """
@@ -35,8 +64,9 @@ class Jd(Base):
         #                              't1.biz_type="PICK_LOCATION" and t1.`status`=200 and t2.`status`=100 and '
         #                              't2.arrival_time is not null', fetch=False)
         picking_arrive = self.select(sql, fetch=False)
+        self.info(f'到达拣货点信息：{picking_arrive}')
         if len(picking_arrive) >= 1:
-            self.info(f'到达拣货点信息：{picking_arrive}')
+
             for info in picking_arrive:
                 self.url['pickStationFinish']['json']['robotCode'] = info[0]
                 self.url['pickStationFinish']['json']['stationName'] = info[1]
@@ -98,9 +128,12 @@ class Jd(Base):
 
     def count_2_task(self):
         t = int(time.mktime(datetime.date.today().timetuple()) * 1000)
-        self.url['page']['json']['createStartTime'] = t - 21600000
-        self.url['page']['json']['createEndTime'] = t + 64800000
-        re = self.re1(self.url['page']).json()['result']['totalCount']
+        token = jsonpath.jsonpath(self.re1(self.url['login']).json(), '$..token')
+        self.url['page1']['json']['createStartTime'] = t - 21600000
+        self.url['page1']['json']['createEndTime'] = t + 64800000
+        self.url['page1']['headers']['token'] = token[0]
+
+        re = self.re1(self.url['page1']).json()['result']['totalCount']
         return re
 
     def unload_amr(self):
@@ -109,20 +142,22 @@ class Jd(Base):
         到达拣货点：拣货
         到达停车区：下单
         """
+
         url = 'http://192.168.98.198:8070/robotManager/getRobotList'
         headers = {"Content-Type": "application/json"}
         json = {"timeout": 3000, "pageNumber": 1, "pageSize": 100, "robotCode": "", "mapName": ""}
         re = requests.post(url, headers=headers, json=json).json()
         for amr_start in re['result']['items']:
             # AMR在线且到达状态
-            if amr_start['baseStatus'] == '到达' and amr_start['online'] == True :
+            if amr_start['baseStatus'] == '到达' and amr_start['online'] == True:
                 # 到达目标点为卸货点
                 if amr_start['currentTargetName'][0:3] == '卸货点':
                     self.url['freedAMR']['json']['robotCode'] = amr_start['robotCode']
                     freedAMR = self.re1(self.url['freedAMR'])
                     self.info(f'卸货结果：{freedAMR.json()}')
             # AMR在线且目标点为停车区且空闲
-            if amr_start['baseStatus'] == '空闲' and amr_start['currentTargetName'][0:3] == '停车区' and amr_start['online'] == True:
+            if amr_start['baseStatus'] == '空闲' and amr_start['currentTargetName'][0:3] == '停车区' and amr_start[
+                'online'] == True:
                 time.sleep(3)
                 self.info('到达停车区')
-                self.receivePicking(1)
+                station_number += len(jsonpath.jsonpath(self.receivePicking1(1).json(), '$..pickStationNo'))

@@ -25,6 +25,7 @@ class Cluster_log(logging.Logger):
         # 日志格式
         fmt = logging.Formatter("%(levelname)s-%(asctime)s%(filename)s--%(funcName)-s [line:%(lineno)d] : %(message)s")
         # 日志处理器
+
         p = logging.StreamHandler()
         p.setFormatter(fmt)
         self.addHandler(p)
