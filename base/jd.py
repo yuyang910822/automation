@@ -13,7 +13,6 @@ from base.base import Base
 
 
 class Jd(Base):
-
     # 拣货点数量
     station_number = 0
 
@@ -160,4 +159,5 @@ class Jd(Base):
                 'online'] == True:
                 time.sleep(3)
                 self.info('到达停车区')
-                station_number += len(jsonpath.jsonpath(self.receivePicking1(1).json(), '$..pickStationNo'))
+                self.station_number += len(jsonpath.jsonpath(self.receivePicking1(1).json(), '$..pickStationNo'))
+            # AMR充电流程
