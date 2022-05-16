@@ -65,12 +65,15 @@ class Jd(Base):
         picking_arrive = self.select(sql, fetch=False)
         self.info(f'到达拣货点信息：{picking_arrive}')
         if len(picking_arrive) >= 1:
-
             for info in picking_arrive:
                 self.url['pickStationFinish']['json']['robotCode'] = info[0]
                 self.url['pickStationFinish']['json']['stationName'] = info[1]
                 pickStationFinish = self.re1(self.url['pickStationFinish'])
                 self.info(f'拣货结果：{pickStationFinish.json()}')
+        # 查询机器人上次拣货完成时间或者投线完成且非充电中
+        # 查询当前机器人任务是否拣选中，查看与接单时间间隔
+
+        # 查询是否拣选完成，拣选完成时间与当前时间间隔
 
     def unload(self, sql: str):
         """
@@ -146,18 +149,33 @@ class Jd(Base):
         headers = {"Content-Type": "application/json"}
         json = {"timeout": 3000, "pageNumber": 1, "pageSize": 100, "robotCode": "", "mapName": ""}
         re = requests.post(url, headers=headers, json=json).json()
+        # 遍历机器人的状态
         for amr_start in re['result']['items']:
+
             # AMR在线且到达状态
-            if amr_start['baseStatus'] == '到达' and amr_start['online'] == True:
-                # 到达目标点为卸货点
+            if amr_start['baseStatus'] == '到达' and amr_start['startWork'] == True:
+                # 判断到达目标点为卸货点****
                 if amr_start['currentTargetName'][0:3] == '卸货点':
                     self.url['freedAMR']['json']['robotCode'] = amr_start['robotCode']
                     freedAMR = self.re1(self.url['freedAMR'])
                     self.info(f'卸货结果：{freedAMR.json()}')
             # AMR在线且目标点为停车区且空闲
             if amr_start['baseStatus'] == '空闲' and amr_start['currentTargetName'][0:3] == '停车区' and amr_start[
-                'online'] == True:
+                'startWork'] == True:
                 time.sleep(3)
                 self.info('到达停车区')
                 self.station_number += len(jsonpath.jsonpath(self.receivePicking1(1).json(), '$..pickStationNo'))
-            # AMR充电流程
+
+    def get_robot_id(self) -> dict:
+        """
+        返回字典类型的机器人编号和对应的机器人id
+        :return:
+        """
+        re = self.re1(self.url['robots'])
+        return dict(
+            zip(
+                jsonpath.jsonpath(re.json()['result']['robotResources'], '$..number'),
+                jsonpath.jsonpath(re.json(), '$..id')
+            )
+        )
+

@@ -74,7 +74,7 @@ class Base(Mysql):
         :param name:实例变量名称
         :return: 毫秒时间戳
         """
-        t = int(time.time()*1000)
+        t = int(time.time() * 1000)
         setattr(self, name, t)
         return t
 
@@ -122,9 +122,15 @@ class Base(Mysql):
         t = int(time.time() * 1000)
         return t
 
+    def json_extractor(self, obj, expr):
+        """
+        jsonpath提取
+        :return:
+        """
+        return jsonpath.jsonpath(obj, expr)
 
 
 if __name__ == '__main__':
-        f = Base('mysql', '1', 'jd_api', 'sy_test')
-        print(select_issou())
-        f.vx_inform(select_issou())
+    f = Base('mysql', '1', 'jd_api', 'sy_test')
+    print(select_issou())
+    f.vx_inform(select_issou())

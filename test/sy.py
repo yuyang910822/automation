@@ -55,4 +55,4 @@ class Sy(Jd):
 
 if __name__ == '__main__':
     auto = Sy('mysql', 'test_水印', 'jd_api', 'sy_test')
-    auto.sy_atutomationa()
+    print(auto.get_robot_id())

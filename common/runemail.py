@@ -68,5 +68,14 @@ def runEmail(file, title):
 
 
 if __name__ == '__main__':
-    pass
+    info = f'Hi all:\n' \
+           f'\n' \
+           f'今日京东水饮流程稳定性测试完成：\n' \
+           f'   开始时间（1)' \
+           f'   :00）\n' \
+           f'   结束时间（2）\n' \
+           f'   共执行任务数量：2单\n' \
+           f'   拣货点：2个\n' \
+           f'   平均耗时：2分'
+    runEmail(info,'11111')
 
