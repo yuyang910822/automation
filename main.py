@@ -1,18 +1,14 @@
-import threading
+import datetime
+import time
 
+timeStamp = 1381419600
 
-class Singleton(object):
-    _instance_lock = threading.Lock()
-
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, '_instance'):
-            with Singleton._instance_lock:
-                if not hasattr(cls, '_instance'):
-                    Singleton._instance = super().__new__(cls)
-        return Singleton._instance
-
-
-
+t = time.mktime(datetime.date.today().timetuple())
+print(int(t))
+print(type(timeStamp),type(t))
+timeArray = time.localtime(int(t))
+print(type(timeArray))
+otherStyleTime = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
+otherStyleTime1 = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
+print(otherStyleTime)
+print(otherStyleTime1)

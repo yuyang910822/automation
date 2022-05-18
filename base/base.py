@@ -63,7 +63,7 @@ class Base(Mysql):
         """
         times = int(time.time() * 1000)
 
-        self.info(f'{str(info["url"]).split("/")[-1]}--|{times}|>>>>>{info["json"]}')
+        self.info(f'{str(info["url"])}--|{times}|>>>>>{info["json"]}')
         r = requests.request(**info)
         self.info(f'{str(info["url"]).split("/")[-1]}--|{times}|<<<<<{r.json()}')
         return r
@@ -125,6 +125,8 @@ class Base(Mysql):
     def json_extractor(self, obj, expr):
         """
         jsonpath提取
+        :param obj: json对象
+        :param expr: 表达式
         :return:
         """
         return jsonpath.jsonpath(obj, expr)

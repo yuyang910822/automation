@@ -66,6 +66,7 @@ class Jd(Base):
         self.info(f'到达拣货点信息：{picking_arrive}')
         if len(picking_arrive) >= 1:
             for info in picking_arrive:
+                time.sleep(2)
                 self.url['pickStationFinish']['json']['robotCode'] = info[0]
                 self.url['pickStationFinish']['json']['stationName'] = info[1]
                 pickStationFinish = self.re1(self.url['pickStationFinish'])
@@ -90,7 +91,7 @@ class Jd(Base):
                 freedAMR = self.re1(self.url['freedAMR'])
                 self.info(f'卸货结果：{freedAMR.json()}')
                 time.sleep(3)
-                self.receivePicking(1)
+                self.receivePicking1(1)
                 # for i in range(10):
                 #     time.sleep(6)
                 #     # print(jsonpath.jsonpath(self.robot_start(amrid[0]), '$..name'))
