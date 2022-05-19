@@ -14,7 +14,6 @@ from base.base import Base
 
 class Jd(Base):
     # 拣货点数量
-    station_number = 0
 
     def receivePicking1(self, tag: int):
         """
@@ -22,35 +21,34 @@ class Jd(Base):
         :param tag: 任务类型
         :return:
         """
-        t = self.getTimeStamp()
-        self.url['receivePicking']['json']['taskNo'] = t
-        self.url['receivePicking']['json']['tagType'] = tag
-        self.url['receivePicking']['json']['cutOffTime'] = t + (60000 * 10)
+        # 生成随机储位任务
         staion = ['01-01', '07-01', '013-01', '02-01', '08-01', '014-01',
                   '03-01', '09-01', '015-01', '04-01', '010-01', '016-01',
-                  '05-01', '011-01', '017-01', '06-01', '012-01', '018-01', ]
+                  '05-01', '011-01', '017-01', '06-01', '012-01', '018-01']
         data = []
         for i in range(1, 10):
             data.append(staion[random.randint(0, 17)])
         data = list(set(data))
-        self.url['receivePicking']['json']['detailList'] = data
 
-        receivePicking = self.re1(self.url['receivePicking'])
-        self.info(f'下单结果：{receivePicking.json()}')
-        return receivePicking
-
-    def receivePicking(self, tag: int):
-        """
-        下单
-        :param tag: 任务类型
-        :return:
-        """
         t = self.getTimeStamp()
         self.url['receivePicking']['json']['taskNo'] = t
         self.url['receivePicking']['json']['tagType'] = tag
         self.url['receivePicking']['json']['cutOffTime'] = t + (60000 * 10)
-        receivePicking = self.re1(self.url['receivePicking'])
-        self.info(f'下单结果：{receivePicking.json()}')
+        self.url['receivePicking']['json']['detailList'] = data
+        self.re1(self.url['receivePicking'])
+
+    # def receivePicking(self, tag: int):
+    #     """
+    #     下单
+    #     :param tag: 任务类型
+    #     :return:
+    #     """
+    #     t = self.getTimeStamp()
+    #     self.url['receivePicking']['json']['taskNo'] = t
+    #     self.url['receivePicking']['json']['tagType'] = tag
+    #     self.url['receivePicking']['json']['cutOffTime'] = t + (60000 * 10)
+    #     receivePicking = self.re1(self.url['receivePicking'])
+    #     self.info(f'下单结果：{receivePicking.json()}')
 
     def picking(self, sql: str):
         """
@@ -58,10 +56,6 @@ class Jd(Base):
         :param sql: 查询到达拣货点
         :return:
         """
-        # picking_arrive = self.select('select t1.robot_code as robotCode,t2.internal_station_name as stationName '
-        #                              'from t_robot_task t1,t_robot_task_detail t2 where t1.id=t2.task_id and '
-        #                              't1.biz_type="PICK_LOCATION" and t1.`status`=200 and t2.`status`=100 and '
-        #                              't2.arrival_time is not null', fetch=False)
         picking_arrive = self.select(sql, fetch=False)
         self.info(f'到达拣货点信息：{picking_arrive}')
         if len(picking_arrive) >= 1:
@@ -69,12 +63,7 @@ class Jd(Base):
                 time.sleep(2)
                 self.url['pickStationFinish']['json']['robotCode'] = info[0]
                 self.url['pickStationFinish']['json']['stationName'] = info[1]
-                pickStationFinish = self.re1(self.url['pickStationFinish'])
-                self.info(f'拣货结果：{pickStationFinish.json()}')
-        # 查询机器人上次拣货完成时间或者投线完成且非充电中
-        # 查询当前机器人任务是否拣选中，查看与接单时间间隔
-
-        # 查询是否拣选完成，拣选完成时间与当前时间间隔
+                self.re1(self.url['pickStationFinish'])
 
     def unload(self, sql: str):
         """
@@ -87,24 +76,10 @@ class Jd(Base):
         if len(unload_arrive) >= 1:
             self.info(f'到达卸货点信息：{unload_arrive}')
             for amrid in unload_arrive:
+                time.sleep(2)
                 self.url['freedAMR']['json']['robotCode'] = amrid[0]
-                freedAMR = self.re1(self.url['freedAMR'])
-                self.info(f'卸货结果：{freedAMR.json()}')
-                time.sleep(3)
+                self.re1(self.url['freedAMR'])
                 self.receivePicking1(1)
-                # for i in range(10):
-                #     time.sleep(6)
-                #     # print(jsonpath.jsonpath(self.robot_start(amrid[0]), '$..name'))
-                #     data = jsonpath.jsonpath(self.robot_start(amrid[0]), '$..name')
-                #     if data:
-                #         if data[0][0:2] == 'go':
-                #             self.info('前往停车区')
-                #             self.receivePicking(1)
-                #             break
-                #         if data[0][0:2] == 'go':
-                #             self.info('前往充电区')
-                #             self.receivePicking(1)
-                #             break
 
     def robot_start(self, resourceId: str):
         """
@@ -113,9 +88,9 @@ class Jd(Base):
         :return:
         """
         # resourceId 随机生成.映射robot
-        robot = {"018": "81b5a771-e7af-4eff-b2d7-0124cd820e23"}
+        # robot = {"018": "81b5a771-e7af-4eff-b2d7-0124cd820e23"}
         self.url['jobs']['url'] = str(self.url['jobs']['url']).replace(
-            'resourceId=81b5a771-e7af-4eff-b2d7-0124cd820e23', f'resourceId={robot[resourceId]}')
+            'resourceId=81b5a771-e7af-4eff-b2d7-0124cd820e23', f'resourceId={self.get_robot_id()[resourceId]}')
         re = self.re1(self.url['jobs'])
         return re.json()
 
@@ -128,6 +103,19 @@ class Jd(Base):
         self.url['page']['json']['lastFinishTimeEnd'] = t + 64800000
         re = self.re1(self.url['page']).json()['result']['totalCount']
         return re
+
+    def charging_count(self):
+        """
+        统计充电次数
+        :return:
+        """
+        numeber = 0
+
+        self.url['jobs']['url'] = '?'.join([self.url['jobs']['url'], 'limit=0,2000&sort=createdAt,desc'])
+        for i in self.re1(self.url['jobs']).json()['result']['jobs']:
+            if i['name'] == "go to charging" and i['status'] == 'finished':
+                numeber += 1
+        return numeber
 
     def count_2_task(self):
         t = int(time.mktime(datetime.date.today().timetuple()) * 1000)
@@ -165,7 +153,7 @@ class Jd(Base):
                 'startWork'] == True:
                 time.sleep(3)
                 self.info('到达停车区')
-                self.station_number += len(jsonpath.jsonpath(self.receivePicking1(1).json(), '$..pickStationNo'))
+                self.receivePicking1(1)
 
     def get_robot_id(self) -> dict:
         """
@@ -179,4 +167,3 @@ class Jd(Base):
                 jsonpath.jsonpath(re.json(), '$..id')
             )
         )
-

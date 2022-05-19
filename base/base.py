@@ -18,9 +18,6 @@ class Base(Mysql):
     公共方法层,业务层继承基类，方便调用
     """
 
-    # def __new__(cls, *args, **kwargs):
-    #     pass
-
     def __init__(self, db_name: str, log_name: str, url_file_name: str, host: str):
         """
         基础类
@@ -30,6 +27,7 @@ class Base(Mysql):
         :param host: url_file_name环境的host
         """
         super(Base, self).__init__(mysql_data=readYaml(mysql_dir)[db_name], file=log_name)
+
         self.url = readYaml(url_dir.format(url_file_name))
         # 通过读取host，更新对应请求数据url中的host
         localhost = readYaml(url_config_dir)[host]

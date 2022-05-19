@@ -9,18 +9,13 @@
 -------------------------------------------------
 """
 
-import jsonpath as jsonpath
+import datetime
 import time
-import time,datetime
-
-from common.runemail import runEmail
-
 from base.jd import Jd
-from common.vx import vx_inform
+from common.runemail import runEmail
 
 
 class Sy(Jd):
-
     # 未发出报告
     start = 0
 
@@ -44,17 +39,19 @@ class Sy(Jd):
                 t = time.mktime(datetime.date.today().timetuple())
                 startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t - 21600))
                 endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t + 64800))
-                number = self.select(f'SELECT * FROM t_picking WHERE `status` = 500 and create_time>"{startTime}" and  create_time<"{endTime}";')
+                number = self.select(
+                    f'SELECT * FROM t_picking WHERE `status` = 500 and create_time>"{startTime}" and  create_time<"{endTime}";')
                 runEmail(f'今日京东水印流程稳定性测试完成：\n'
-                          f'开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00'
-                          f':00）\n结束时间（{self.getDateTime()}）\n'
-                          f'共执行任务数量：{len(number)}单\n')
+                         f'开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00'
+                         f':00）\n结束时间（{self.getDateTime()}）\n'
+                         f'共执行任务数量：{len(number)}单\n'
+                         f'充点次数：{self.charging_count()}')
+
                 print('测试报告已发出，更新状态')
                 self.start = 1
             elif self.getTime() == 0 and self.start == 1:
                 print('重新开始，初始化状态')
                 self.start = 0
-
 
 
 if __name__ == '__main__':
