@@ -2,13 +2,14 @@
 # @Time : 2022/1/20 16:15 
 # @Author : Yu yang
 # @File : runtiest.py
+import configparser
 import os
 import time
 import requests
 
 from requests import Response
 from common.mysql import Mysql
-from common.path import mysql_dir, url_dir, url_config_dir
+from common.path import mysql_dir, url_dir, url_config_dir, config_ini_dir
 from common.readYaml import readYaml
 from jira_remind.issou import *
 
@@ -128,6 +129,23 @@ class Base(Mysql):
         :return:
         """
         return jsonpath.jsonpath(obj, expr)
+
+    def operate_ini(self, section, key, value, types=1):
+        """
+        配置文件ini操作
+        :param section: 区块名称
+        :param key: 名字
+        :param value: 值
+        :param types: 1：获取 0:修改
+        :return:
+        """
+        conf = configparser.ConfigParser()  # 类的实例化
+        conf.read(config_ini_dir)
+        if types == 1:
+            return conf.get(section, key)
+        elif types == 0:
+            conf.set(section, key, value)
+            conf.write(open(config_ini_dir, 'w', encoding='utf-8'))
 
 
 if __name__ == '__main__':

@@ -30,5 +30,7 @@ url_dir = os.path.join(dirs, r'data\{}.yaml')
 
 url_config_dir = os.path.join(dirs, r'config\url_config.yaml')
 
+config_ini_dir = os.path.join(dirs, r'config\config.ini')
+
 if __name__ == '__main__':
     print(log_dir + '\\' + '1')
