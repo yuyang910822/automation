@@ -9,8 +9,9 @@
 -------------------------------------------------
 """
 
-import datetime
-import time
+
+import time, datetime
+
 from base.jd import Jd
 from common.runemail import runEmail
 
@@ -35,25 +36,33 @@ class Sy(Jd):
                         "t1.id=t2.task_id and t1.biz_type='PICK_UNLOADING' and t1.`status`=200 and t2.`status`=100 "
                         "and t2.arrival_time is not null;")
 
-            if self.getTime() == 18 and self.start == 0:
+            if self.getTime() == 18 and self.operate_ini('status', 'email_status') == 'False':
                 t = time.mktime(datetime.date.today().timetuple())
                 startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t - 21600))
                 endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t + 64800))
                 number = self.select(
+                    f'SELECT * FROM t_picking WHERE `status` = 500 and create_time>"{startTime}" and  create_time<"{endTime}";',fetch=False)
+                print(
                     f'SELECT * FROM t_picking WHERE `status` = 500 and create_time>"{startTime}" and  create_time<"{endTime}";')
-                runEmail(f'今日京东水印流程稳定性测试完成：\n'
-                         f'开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00'
-                         f':00）\n结束时间（{self.getDateTime()}）\n'
-                         f'共执行任务数量：{len(number)}单\n'
-                         f'充点次数：{self.charging_count()}')
-
                 print('测试报告已发出，更新状态')
-                self.start = 1
-            elif self.getTime() == 0 and self.start == 1:
+                info = f'Hi all:\n' \
+                       f'\n' \
+                       f'\t今日京东水饮流程稳定性测试完成：\n' \
+                       f'\t     开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00' \
+                       f':00）\n' \
+                       f'\t     结束时间（{self.getDateTime()}）\n' \
+                       f'\t     共执行任务数量：{len(number)}单\n' \
+                       f'\t     共完成充电任务：{self.charging_count()}'
+                runEmail(info, ''.join(['【京东2.0水饮仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
+                print('测试报告已发出，更新状态')
+                self.operate_ini('status', 'email_status', 'True', types=0)
+            elif self.operate_ini('status', 'email_status') == 'True' and self.getTime() != 18:
                 print('重新开始，初始化状态')
-                self.start = 0
+                self.operate_ini('status', 'email_status', 'False', types=0)
 
 
 if __name__ == '__main__':
     auto = Sy('sy_mysql_prod', 'test_水印', 'jd_api', 'sy_prod')
     auto.sy_atutomationa()
+    # print(auto.charging_count())
+#

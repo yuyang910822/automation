@@ -118,6 +118,10 @@ class Jd(Base):
         return numeber
 
     def count_2_task(self):
+        """
+        1.0统计任务
+        :return:
+        """
         t = int(time.mktime(datetime.date.today().timetuple()) * 1000)
         token = jsonpath.jsonpath(self.re1(self.url['login']).json(), '$..token')
         self.url['page1']['json']['createStartTime'] = t - 21600000
