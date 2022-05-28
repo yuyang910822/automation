@@ -2,14 +2,19 @@
 # @Time : 2022/5/5 17:07 
 # @Author : Yu yang
 # @File : jd.py
+import sys
+
+from common.runemail import runEmail
+
+from base.basePackage import Base
 
 import datetime
 import random
+import sys
 import time
 
 import jsonpath
 import requests
-from base.base import Base
 
 
 class Jd(Base):
@@ -171,3 +176,92 @@ class Jd(Base):
                 jsonpath.jsonpath(re.json(), '$..id')
             )
         )
+
+    def exceptionHandle(self):
+        """
+        异常监控
+        :return:
+        """
+
+        handle = self.select('select * from t_exception_handle where `status` =0',fetch=False)
+        if handle is not None:
+            for handle_id in handle:
+                # 拼接获取异常处理入参
+                self.url['get']['url'] = '/'.join([self.url['get']['url'], str(handle_id[0])])
+                # 通过异常类型关联异常处理方法
+                handle_info = self.re1(self.url['get']).json()['result']
+                if handle_info['exceptionTypeDesc'] == "docking失败，并且无法识别容器编号":
+                    self.url['handle']['json'] = handle_info
+                    self.url['handle']['json']['containerCode'] = "111"
+                    self.re1(self.url['handle'])
+
+
+            #
+            # elif exception['exceptionTypeDesc'] == '未知异常':
+            #     pass
+            # elif exception['exceptionTypeDesc'] == '未知异常':
+            #     pass
+            # elif exception['exceptionTypeDesc'] == '未知异常':
+            #     pass
+            # elif exception['exceptionTypeDesc'] == '未知异常':
+            #     pass
+            # elif exception['exceptionTypeDesc'] == '未知异常':
+            #     pass
+            # elif exception['exceptionTypeDesc'] == '未知异常':
+            #     pass
+            # elif exception['exceptionTypeDesc'] == '未知异常':
+            #     pass
+            # elif exception['exceptionTypeDesc'] == '未知异常':
+            #     pass
+
+    def get_amr_tag(self, tags):
+        """
+        获取配置指定AMR的tag
+        :param tags 对应模式的tag
+        :return:
+        """
+        self.url['robots']['url'] = '?'.join([self.url['robots']['url'],'limit=0,100&status=online&jobStatus=idle'])
+        # 空闲在线AMR id
+        data = self.re1(self.url['robots']).json()
+        for amrid in data['result']['robotResources']:
+            # 获取tag
+            self.url['robots_tag']['url'] = '/'.join([self.url['robots_tag']['url'], amrid['id']])
+            # 一台AMR配置多个tag 满足一个就下单并终止
+            for tag in tags:
+                if tag in self.re1(self.url['robots_tag']).json()['result']['robotResource']['tags']:
+                    # 满足则下单
+                    self.receivePicking1(random.randint(2, 3))
+                    break
+
+
+
+    def run(self, run_time=18):
+        """发送邮件"""
+        if self.getTime() == run_time and self.operate_ini('status', 'email_status') == 'False':
+            t = time.mktime(datetime.date.today().timetuple())
+            startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t - 21600))
+            endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t + 64800))
+            number = self.select(
+                f'SELECT * FROM t_picking WHERE `status` = 500 and create_time>"{startTime}" and  create_time<"{endTime}";',
+                fetch=False)
+            print(
+                f'SELECT * FROM t_picking WHERE `status` = 500 and create_time>"{startTime}" and  create_time<"{endTime}";')
+            print('测试报告已发出，更新状态')
+            info = f'Hi all:\n' \
+                   f'\n' \
+                   f'\t今日京东水饮流程稳定性测试完成：\n' \
+                   f'\t     开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00' \
+                   f':00）\n' \
+                   f'\t     结束时间（{self.getDateTime()}）\n' \
+                   f'\t     共执行任务数量：{len(number)}单\n' \
+                   f'\t     共完成充电任务：{self.charging_count()}'
+            runEmail(info, ''.join(['【京东2.0水饮仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
+            print('测试报告已发出，更新状态')
+            self.operate_ini('status', 'email_status', 'True', types=0)
+        elif self.operate_ini('status', 'email_status') == 'True' and self.getTime() != run_time:
+            print('重新开始，初始化状态')
+            self.operate_ini('status', 'email_status', 'False', types=0)
+
+if __name__ == '__main__':
+    auto = Jd('mysql', 'test_水印', 'jd_api1', 'sy_test')
+    auto.get_amr_tag(['COv0vWD6'])

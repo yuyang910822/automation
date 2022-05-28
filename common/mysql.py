@@ -42,6 +42,7 @@ class Mysql(Cluster_log):
         """""
         try:
             self.c.execute(sql)
+
             self.db.commit()
         except BaseException as e:
             self.error(f'{e}')

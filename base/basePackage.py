@@ -54,7 +54,7 @@ class Base(Mysql):
     #     self.log.info(f'响应体:{r.json()}')
     #     return r
 
-    def re1(self, info: dict) -> Response:
+    def re1(self, info: dict,tag=1) -> Response:
         """
         封装接口请求
         :param 请求信息
@@ -62,6 +62,8 @@ class Base(Mysql):
         """
         times = int(time.time() * 1000)
 
+        if 'forwardx.com' in info['url']:
+            info['headers']['token'] = jsonpath.jsonpath(requests.request(**self.url['login']).json(), '$..token')[0]
         self.info(f'{str(info["url"])}--|{times}|>>>>>{info["json"]}')
         r = requests.request(**info)
         self.info(f'{str(info["url"]).split("/")[-1]}--|{times}|<<<<<{r.json()}')

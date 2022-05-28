@@ -31,6 +31,5 @@ class ExcelClass:
 
 
 if __name__ == '__main__':
-    e = ExcelClass('../data/【kk仓现场测试问题】--汇总.xlsx', '现场问题汇总')
-    for i in e.readDada():
-        print(i)
+    e = ExcelClass(r'C:\Users\yuyang\Desktop\1.xlsx', 'She')
+    e.readDada()

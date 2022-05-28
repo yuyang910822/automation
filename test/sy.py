@@ -28,13 +28,21 @@ class Sy(Jd):
 
         while True:
             time.sleep(5)
+            # 上箱点异常AMR
+
+            # 到达拣货点AMR
             self.picking('select t1.robot_code as robotCode,t2.internal_station_name as stationName from t_robot_task '
                          't1,t_robot_task_detail t2 where t1.id=t2.task_id and t1.biz_type="PICK_LOCATION" and '
                          't1.`status`=200 and t2.`status`=100 and t2.arrival_time is not null')
 
+            # 到达投线点AMR
             self.unload("select t1.robot_code as robotCode from t_robot_task t1,t_robot_task_detail t2 where "
                         "t1.id=t2.task_id and t1.biz_type='PICK_UNLOADING' and t1.`status`=200 and t2.`status`=100 "
                         "and t2.arrival_time is not null;")
+
+            # 投线点异常AMR
+
+            # 空闲AMR下单
 
             if self.getTime() == 18 and self.operate_ini('status', 'email_status') == 'False':
                 t = time.mktime(datetime.date.today().timetuple())
