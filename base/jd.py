@@ -116,8 +116,7 @@ class Jd(Base):
         """
         numeber = 0
 
-        self.url['jobs']['url'] = '?'.join([self.url['jobs']['url'], 'limit=0,2000&sort=createdAt,desc'])
-        for i in self.re1(self.url['jobs']).json()['result']['jobs']:
+        for i in self.re1(self.url['charging_jobs']).json()['result']['jobs']:
             if i['name'] == "go to charging" and i['status'] == 'finished':
                 numeber += 1
         return numeber
@@ -187,7 +186,7 @@ class Jd(Base):
         if handle is not None:
             for handle_id in handle:
                 # 拼接获取异常处理入参
-                self.url['get']['url'] = '/'.join([self.url['get']['url'], str(handle_id[0])])
+                self.url['get']['url'] = 'get/'.join([self.url['get']['url'].split('get')[0], str(handle_id[0])])
                 # 通过异常类型关联异常处理方法
                 handle_info = self.re1(self.url['get']).json()['result']
                 if handle_info['exceptionTypeDesc'] == "docking失败，并且无法识别容器编号":
@@ -220,20 +219,17 @@ class Jd(Base):
         :param tags 对应模式的tag
         :return:
         """
-        self.url['robots']['url'] = '?'.join([self.url['robots']['url'],'limit=0,100&status=online&jobStatus=idle'])
         # 空闲在线AMR id
         data = self.re1(self.url['robots']).json()
         for amrid in data['result']['robotResources']:
             # 获取tag
-            self.url['robots_tag']['url'] = '/'.join([self.url['robots_tag']['url'], amrid['id']])
+            self.url['robots_tag']['url'] = 'robots/'.join([self.url['robots_tag']['url'].split('robts')[0], amrid['id']])
             # 一台AMR配置多个tag 满足一个就下单并终止
             for tag in tags:
                 if tag in self.re1(self.url['robots_tag']).json()['result']['robotResource']['tags']:
                     # 满足则下单
                     self.receivePicking1(random.randint(2, 3))
                     break
-
-
 
     def run(self, run_time=18):
         """发送邮件"""
@@ -264,4 +260,5 @@ class Jd(Base):
 
 if __name__ == '__main__':
     auto = Jd('mysql', 'test_水印', 'jd_api1', 'sy_test')
-    auto.get_amr_tag(['COv0vWD6'])
+    print(auto.exceptionHandle())
+    # print(auto.exceptionHandle())
