@@ -132,7 +132,7 @@ class Base(Mysql):
         """
         return jsonpath.jsonpath(obj, expr)
 
-    def operate_ini(self, section, key, value, types=1):
+    def operate_ini(self, section, key, value=None, types=1):
         """
         配置文件ini操作
         :param section: 区块名称
@@ -148,6 +148,69 @@ class Base(Mysql):
         elif types == 0:
             conf.set(section, key, value)
             conf.write(open(config_ini_dir, 'w', encoding='utf-8'))
+
+    def erms_all_robots_online_info(self):
+        """
+        获取erms全部在线的机器人信息
+        :return:
+        """
+        info = []
+        for robot in self.re1(self.url['robots']).json()['result']['robotResources']:
+            if robot['status'] == 'online':
+                info.append(robot)
+        self.info(f'当前在线的AMR：{info}')
+        return info
+
+    def erms_robot_id(self, number):
+        """
+        获取erms指定机器人的id
+        number: 机器人号码
+        :return:
+        """
+        for info in self.erms_all_robots_online_info():
+            if info['number'] == number:
+                self.info(f"erms对应的ip：{info['number']} {info['id']}")
+                return info['id']
+
+    def erms_robot_sn(self, number):
+        """
+        获取erms指定机器人的sn
+        number: 机器人号码
+        :return:
+        """
+        for info in self.erms_all_robots_online_info():
+            if info['number'] == number:
+                return info['sn']
+
+    def erms_robot_ip(self, resourceId):
+        """
+        获取erms指定机器人的ip
+        :param resourceId: erms机器人id
+        :return:
+        """
+        for ips in self.re1(self.url['connections']).json()['result']['connections']:
+            if ips['resourceId'] == resourceId:
+                return ips['ip']
+
+    def agent_robot_finish(self, robotcode):
+        """
+        提前到达
+        :param robotcode: 机器人code
+        :return:
+        """
+
+        self.info(f'当前在线的AMR{robotcode}')
+        self.info('获取erms的机器人id')
+        erms_robot_id = self.erms_robot_id(robotcode)
+
+        self.info('获取erms的机器人ip')
+        ips = self.erms_robot_ip(erms_robot_id)
+        if ips is not None:
+            self.info('提前到达')
+            self.url['finish']['url'] = self.url['finish']['url'].replace('agent', ':'.join([ips,'7000']))
+            self.re1(self.url['finish'])
+        else:
+            self.error(f'机器人{robotcode}：未在线')
 
 
 if __name__ == '__main__':

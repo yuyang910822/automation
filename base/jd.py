@@ -27,12 +27,11 @@ class Jd(Base):
         :return:
         """
         # 生成随机储位任务
-        staion = ['01-01', '07-01', '013-01', '02-01', '08-01', '014-01',
-                  '03-01', '09-01', '015-01', '04-01', '010-01', '016-01',
-                  '05-01', '011-01', '017-01', '06-01', '012-01', '018-01']
-        data = []
+        staion = ['01-01', '02-01', '04-01', '05-01', '07-01',
+                  '08-01']
+        data = ['08-01']
         for i in range(1, 10):
-            data.append(staion[random.randint(0, 17)])
+            data.append(staion[random.randint(0, 5)])
         data = list(set(data))
 
         t = self.getTimeStamp()
@@ -42,33 +41,48 @@ class Jd(Base):
         self.url['receivePicking']['json']['detailList'] = data
         self.re1(self.url['receivePicking'])
 
-    # def receivePicking(self, tag: int):
-    #     """
-    #     下单
-    #     :param tag: 任务类型
-    #     :return:
-    #     """
-    #     t = self.getTimeStamp()
-    #     self.url['receivePicking']['json']['taskNo'] = t
-    #     self.url['receivePicking']['json']['tagType'] = tag
-    #     self.url['receivePicking']['json']['cutOffTime'] = t + (60000 * 10)
-    #     receivePicking = self.re1(self.url['receivePicking'])
-    #     self.info(f'下单结果：{receivePicking.json()}')
-
-    def picking(self, sql: str):
+    def receivePicking(self, tag: int):
         """
-        拣货确认
+        下单
+        :param tag: 任务类型
+        :return:
+        """
+        # 生成随机储位任务
+
+        data = ['P01-01', 'P02-01', 'P03-01']
+        t = self.getTimeStamp()
+        self.url['receivePicking']['json']['taskNo'] = t
+        self.url['receivePicking']['json']['tagType'] = tag
+        self.url['receivePicking']['json']['cutOffTime'] = t + (60000 * 10)
+        self.url['receivePicking']['json']['detailList'] = data
+        self.re1(self.url['receivePicking'])
+
+    def picking(self, sql: str, tag=1):
+        """
+        拣货确认且最后一个拣货点拣货完成下单
         :param sql: 查询到达拣货点
+        :param tag: 下单类型
         :return:
         """
         picking_arrive = self.select(sql, fetch=False)
-        self.info(f'到达拣货点信息：{picking_arrive}')
         if len(picking_arrive) >= 1:
+            self.info(f'到达拣货点信息：{picking_arrive}')
             for info in picking_arrive:
                 time.sleep(2)
                 self.url['pickStationFinish']['json']['robotCode'] = info[0]
                 self.url['pickStationFinish']['json']['stationName'] = info[1]
-                self.re1(self.url['pickStationFinish'])
+                self.url['pickStationFinish']['json']['stationName'] = info[1]
+                result = self.re1(self.url['pickStationFinish'])
+                # 兼容多任务版本确认拣货需要传递taskList
+                if result.json() == {'status': {'statusCode': 1003, 'statusReason': '机器人目前没有对应的任务'}} or {'status': {'statusCode': 1003, 'statusReason': 'code:1003  reason:机器人目前没有对应的任务'}}:
+                    self.warning('当前任务为多任务，入参加入taskNo')
+                    self.url['pickStationFinish']['json']['taskList'][0]['taskNo'] = \
+                        jsonpath.jsonpath(self.select_task_status(info[0]), "$..originWaveNo")[0]
+                    self.re1(self.url['pickStationFinish'])
+                if info[1] == '08-01':
+                    self.receivePicking1(tag)
+                if info[1] == 'P03-01':
+                    self.receivePicking(2)
 
     def unload(self, sql: str):
         """
@@ -84,7 +98,7 @@ class Jd(Base):
                 time.sleep(2)
                 self.url['freedAMR']['json']['robotCode'] = amrid[0]
                 self.re1(self.url['freedAMR'])
-                self.receivePicking1(1)
+                # self.receivePicking1(1)
 
     def robot_start(self, resourceId: str):
         """
@@ -94,7 +108,8 @@ class Jd(Base):
         """
         # resourceId 随机生成.映射robot
         # robot = {"018": "81b5a771-e7af-4eff-b2d7-0124cd820e23"}
-        self.url['jobs']['url'] = str(self.url['jobs']['url']).replace(
+        self.url['charging_jobs']['url'].split()
+        self.url['charging_jobs']['url'] = str(self.url['jobs']['url']).replace(
             'resourceId=81b5a771-e7af-4eff-b2d7-0124cd820e23', f'resourceId={self.get_robot_id()[resourceId]}')
         re = self.re1(self.url['jobs'])
         return re.json()
@@ -182,9 +197,10 @@ class Jd(Base):
         :return:
         """
 
-        handle = self.select('select * from t_exception_handle where `status` =0',fetch=False)
+        handle = self.select('select * from t_exception_handle where `status` =0', fetch=False)
         if handle is not None:
             for handle_id in handle:
+                time.sleep(5)
                 # 拼接获取异常处理入参
                 self.url['get']['url'] = 'get/'.join([self.url['get']['url'].split('get')[0], str(handle_id[0])])
                 # 通过异常类型关联异常处理方法
@@ -193,11 +209,10 @@ class Jd(Base):
                     self.url['handle']['json'] = handle_info
                     self.url['handle']['json']['containerCode'] = "111"
                     self.re1(self.url['handle'])
+                elif handle_info['exceptionTypeDesc'] == '未知异常':
+                    self.url['handle']['json'] = handle_info
+                    self.re1(self.url['handle'])
 
-
-            #
-            # elif exception['exceptionTypeDesc'] == '未知异常':
-            #     pass
             # elif exception['exceptionTypeDesc'] == '未知异常':
             #     pass
             # elif exception['exceptionTypeDesc'] == '未知异常':
@@ -223,7 +238,8 @@ class Jd(Base):
         data = self.re1(self.url['robots']).json()
         for amrid in data['result']['robotResources']:
             # 获取tag
-            self.url['robots_tag']['url'] = 'robots/'.join([self.url['robots_tag']['url'].split('robts')[0], amrid['id']])
+            self.url['robots_tag']['url'] = 'robots/'.join(
+                [self.url['robots_tag']['url'].split('robts')[0], amrid['id']])
             # 一台AMR配置多个tag 满足一个就下单并终止
             for tag in tags:
                 if tag in self.re1(self.url['robots_tag']).json()['result']['robotResource']['tags']:
@@ -258,7 +274,83 @@ class Jd(Base):
             print('重新开始，初始化状态')
             self.operate_ini('status', 'email_status', 'False', types=0)
 
+    def select_task_status(self, robotcode=None, status=None):
+        """
+        查询指定状态任务信息
+        :param robotcode: 机器人id
+        :param status: 状态
+        :return: 指定amr编号任务信息json
+        """
+        self.url['page']['json'] = {"robotCode": robotcode,"status": status, "pageNumber": 1, "pageSize": 10}
+        return self.re1(self.url['page']).json()
+
+
+    # def agent_robot_finish(self):
+    #     """
+    #     提前到达
+    #     :return:
+    #     """
+    #     # 查询rpm拣选中的AMRid
+    #     self.url['page']['json'] = {"status": "200", "pageNumber": 1, "pageSize": 10}
+    #     for amrid in self.re1(self.url['page']).json()['result']['items']:
+    #         self.info(f'当前在线的AMR{amrid["robotCode"]}')
+    #         self.info('获取erms的机器人id')
+    #         erms_robot_id = self.erms_robot_id(amrid['robotCode'])
+    #
+    #         self.info('获取erms的机器人ip')
+    #         ips = self.erms_robot_ip(erms_robot_id)
+    #         if ips is not None:
+    #             self.info('提前到达')
+    #             self.url['finish']['url'] = self.url['finish']['url'].replace('agent', ':'.join([ips,'7000']))
+    #             self.re1(self.url['finish'])
+    #         else:
+    #             self.error(f'机器人{amrid["robotCode"]}：未在线')
+    #
+    # def erms_all_robots_online_info(self):
+    #     """
+    #     获取erms机器人信息
+    #     :return:
+    #     """
+    #     info = []
+    #     for robot in self.re1(self.url['robots']).json()['result']['robotResources']:
+    #         if robot['status'] == 'online':
+    #             info.append(robot)
+    #     self.info(f'当前在线的AMR：{info}')
+    #     return info
+    #
+    # def erms_robot_id(self, number):
+    #     """
+    #     获取erms在线的amr的id
+    #     number: 机器人号码
+    #     :return:
+    #     """
+    #     for info in self.erms_all_robots_online_info():
+    #         if info['number'] == number:
+    #             self.info(f"erms对应的ip：{info['number']} {info['id']}")
+    #             return info['id']
+    #
+    # def erms_robot_sn(self, number):
+    #     """
+    #     获取erms在线的amr的id
+    #     number: 机器人号码
+    #     :return:
+    #     """
+    #     for info in self.erms_all_robots_online_info():
+    #         if info['number'] == number:
+    #             return info['sn']
+    #
+    # def erms_robot_ip(self, resourceId):
+    #     """
+    #     获取AMR的ip
+    #     :param resourceId: erms机器人id
+    #     :return:
+    #     """
+    #     for ips in self.re1(self.url['connections']).json()['result']['connections']:
+    #         if ips['resourceId'] == resourceId:
+    #             return ips['ip']
+
+
 if __name__ == '__main__':
-    auto = Jd('mysql', 'test_水印', 'jd_api1', 'sy_test')
-    print(auto.exceptionHandle())
-    # print(auto.exceptionHandle())
+    auto = Jd('mysql', 'test_水印', 'jd_multitask_api', 'sy_test')
+    auto.select_taskid('014')
+    # print(auto.erms_robot_id('014'))

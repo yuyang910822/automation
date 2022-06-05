@@ -33,7 +33,7 @@ class Sy(Jd):
             # 到达拣货点AMR
             self.picking('select t1.robot_code as robotCode,t2.internal_station_name as stationName from t_robot_task '
                          't1,t_robot_task_detail t2 where t1.id=t2.task_id and t1.biz_type="PICK_LOCATION" and '
-                         't1.`status`=200 and t2.`status`=100 and t2.arrival_time is not null')
+                         't1.`status`=200 and t2.`status`=100 and t2.arrival_time is not null', tag=1)
 
             # 到达投线点AMR
             self.unload("select t1.robot_code as robotCode from t_robot_task t1,t_robot_task_detail t2 where "
@@ -73,4 +73,3 @@ if __name__ == '__main__':
     auto = Sy('sy_mysql_prod', 'test_水印', 'jd_api', 'sy_prod')
     auto.sy_atutomationa()
     # print(auto.charging_count())
-#
