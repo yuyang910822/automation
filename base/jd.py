@@ -276,7 +276,7 @@ class Jd(Base):
 
     def select_task_status(self, robotcode=None, status=None):
         """
-        查询指定状态任务信息
+        查询指定AMR状态的任务信息
         :param robotcode: 机器人id
         :param status: 状态
         :return: 指定amr编号任务信息json
@@ -285,72 +285,9 @@ class Jd(Base):
         return self.re1(self.url['page']).json()
 
 
-    # def agent_robot_finish(self):
-    #     """
-    #     提前到达
-    #     :return:
-    #     """
-    #     # 查询rpm拣选中的AMRid
-    #     self.url['page']['json'] = {"status": "200", "pageNumber": 1, "pageSize": 10}
-    #     for amrid in self.re1(self.url['page']).json()['result']['items']:
-    #         self.info(f'当前在线的AMR{amrid["robotCode"]}')
-    #         self.info('获取erms的机器人id')
-    #         erms_robot_id = self.erms_robot_id(amrid['robotCode'])
-    #
-    #         self.info('获取erms的机器人ip')
-    #         ips = self.erms_robot_ip(erms_robot_id)
-    #         if ips is not None:
-    #             self.info('提前到达')
-    #             self.url['finish']['url'] = self.url['finish']['url'].replace('agent', ':'.join([ips,'7000']))
-    #             self.re1(self.url['finish'])
-    #         else:
-    #             self.error(f'机器人{amrid["robotCode"]}：未在线')
-    #
-    # def erms_all_robots_online_info(self):
-    #     """
-    #     获取erms机器人信息
-    #     :return:
-    #     """
-    #     info = []
-    #     for robot in self.re1(self.url['robots']).json()['result']['robotResources']:
-    #         if robot['status'] == 'online':
-    #             info.append(robot)
-    #     self.info(f'当前在线的AMR：{info}')
-    #     return info
-    #
-    # def erms_robot_id(self, number):
-    #     """
-    #     获取erms在线的amr的id
-    #     number: 机器人号码
-    #     :return:
-    #     """
-    #     for info in self.erms_all_robots_online_info():
-    #         if info['number'] == number:
-    #             self.info(f"erms对应的ip：{info['number']} {info['id']}")
-    #             return info['id']
-    #
-    # def erms_robot_sn(self, number):
-    #     """
-    #     获取erms在线的amr的id
-    #     number: 机器人号码
-    #     :return:
-    #     """
-    #     for info in self.erms_all_robots_online_info():
-    #         if info['number'] == number:
-    #             return info['sn']
-    #
-    # def erms_robot_ip(self, resourceId):
-    #     """
-    #     获取AMR的ip
-    #     :param resourceId: erms机器人id
-    #     :return:
-    #     """
-    #     for ips in self.re1(self.url['connections']).json()['result']['connections']:
-    #         if ips['resourceId'] == resourceId:
-    #             return ips['ip']
 
 
 if __name__ == '__main__':
     auto = Jd('mysql', 'test_水印', 'jd_multitask_api', 'sy_test')
-    auto.select_taskid('014')
+    auto.select_task_status('014')
     # print(auto.erms_robot_id('014'))

@@ -16,7 +16,10 @@ from base.jd import Jd
 from common.runemail import runEmail
 
 
-class Sy(Jd):
+class Jd_singletask(Jd):
+    """
+    京东单任务
+    """
     # 未发出报告
     start = 0
 
@@ -70,6 +73,6 @@ class Sy(Jd):
 
 
 if __name__ == '__main__':
-    auto = Sy('sy_mysql_prod', 'test_水印', 'jd_api', 'sy_prod')
+    auto = Jd_singletask('sy_mysql_prod', 'test_水印', 'jd_singletask_api', 'sy_prod')
     auto.sy_atutomationa()
     # print(auto.charging_count())

@@ -11,10 +11,10 @@
 
 import pymysql
 
-from common.log import Cluster_log
+from common.log import Log
 
 
-class Mysql(Cluster_log):
+class Mysql(Log):
     """数据库"""
 
     def __init__(self, mysql_data, name='日志', level='DEBUG', file=None):

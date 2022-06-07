@@ -149,6 +149,7 @@ class Base(Mysql):
             conf.set(section, key, value)
             conf.write(open(config_ini_dir, 'w', encoding='utf-8'))
 
+
     def erms_all_robots_online_info(self):
         """
         获取erms全部在线的机器人信息

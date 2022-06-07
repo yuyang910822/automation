@@ -16,7 +16,7 @@ from logging.handlers import TimedRotatingFileHandler
 from common.path import log_dir
 
 
-class Cluster_log(logging.Logger):
+class Log(logging.Logger):
     """
     日志能力
     """
