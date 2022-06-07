@@ -47,7 +47,7 @@ class Jd_singletask(Jd):
 
             # 空闲AMR下单
 
-            if self.getTime() == 18 and self.operate_ini('status', 'email_status') == 'False':
+            if self.getTime() == 18 and self.operate_ini('status', 'singletask_email_status') == 'False':
                 t = time.mktime(datetime.date.today().timetuple())
                 startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t - 21600))
                 endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t + 64800))
@@ -66,13 +66,13 @@ class Jd_singletask(Jd):
                        f'\t     共完成充电任务：{self.charging_count()}'
                 runEmail(info, ''.join(['【京东2.0水饮仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
                 print('测试报告已发出，更新状态')
-                self.operate_ini('status', 'email_status', 'True', types=0)
-            elif self.operate_ini('status', 'email_status') == 'True' and self.getTime() != 18:
+                self.operate_ini('status', 'singletask_email_status', 'True', types=0)
+            elif self.operate_ini('status', 'singletask_email_status') == 'True' and self.getTime() != 18:
                 print('重新开始，初始化状态')
-                self.operate_ini('status', 'email_status', 'False', types=0)
+                self.operate_ini('status', 'singletask_email_status', 'False', types=0)
 
 
 if __name__ == '__main__':
     auto = Jd_singletask('sy_mysql_prod', 'test_水印', 'jd_singletask_api', 'sy_prod')
     auto.sy_atutomationa()
-    # print(auto.charging_count())
+
