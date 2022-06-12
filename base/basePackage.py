@@ -14,6 +14,7 @@ from common.readYaml import readYaml
 from jira_remind.issou import *
 
 
+
 class Base(Mysql):
     """
     公共方法层,业务层继承基类，方便调用
