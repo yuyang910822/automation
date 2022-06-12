@@ -339,6 +339,8 @@ class Jd(Base):
             strs += f'\t     AMR:{k} | 共执行{count_time[k][0]} | 任务数量：{count_time[k][1]}单\n'
         return strs
 
+    def timess(self):
+        print('tijiao')
 
 if __name__ == '__main__':
     auto = Jd('sy_mysql_prod', 'test_水印', 'jd_multitask_api', 'sy_prod')
