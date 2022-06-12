@@ -307,6 +307,7 @@ class Jd(Base):
         self.url['page']['json'] = {"robotCode": robotcode, "status": status, "pageNumber": 1, "pageSize": pageSize}
         return self.re1(self.url['page']).json()
 
+
     def conut_run_task_time(self):
         """统计运行时间"""
         count_time = {}
