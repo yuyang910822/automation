@@ -68,21 +68,35 @@ class Jd(Base):
         if len(picking_arrive) >= 1:
             self.info(f'到达拣货点信息：{picking_arrive}')
             for info in picking_arrive:
+                self.url['pickStationFinish']['json']['taskList'].clear()
                 time.sleep(2)
                 self.url['pickStationFinish']['json']['robotCode'] = info[0]
                 self.url['pickStationFinish']['json']['stationName'] = info[1]
-                self.url['pickStationFinish']['json']['stationName'] = info[1]
                 result = self.re1(self.url['pickStationFinish'])
                 # 兼容多任务版本确认拣货需要传递taskList
-                if result.json() == {'status': {'statusCode': 1003, 'statusReason': '机器人目前没有对应的任务'}} or {'status': {'statusCode': 1003, 'statusReason': 'code:1003  reason:机器人目前没有对应的任务'}}:
+                self.debug(result.json()['status']['statusCode'])
+                self.debug(type(result.json()['status']['statusCode']))
+                if result.json()['status']['statusCode'] != 0:
                     self.warning('当前任务为多任务，入参加入taskNo')
-                    self.url['pickStationFinish']['json']['taskList'][0]['taskNo'] = \
-                        jsonpath.jsonpath(self.select_task_status(info[0]), "$..originWaveNo")[0]
+                    picking_id = self.select(f"select id,origin_wave_no from t_picking where parent_task_no = (select "
+                                             f"origin_wave_no from t_picking where `status` =200 and robot_code={info[0]})",
+                                             fetch=False)
+                    self.debug(f'当前机器人：{info[0]}对应的pickingid：{picking_id}')
+                    for id in picking_id:
+                        stationname = str(self.select(f'SELECT t_picking_detail.station_name from t_picking_detail '
+                                                      f'where picking_id ={id[0]}', fetch=False))
+                        if info[1] in stationname:
+                            self.url['pickStationFinish']['json']['taskList'].append(
+                                {"taskNo": id[1], "passagewayTaskNo": "P1647342851-巷道拣货点0",
+                                 "pickingFlag": "0"})
                     self.re1(self.url['pickStationFinish'])
                 if info[1] == '08-01':
                     self.receivePicking1(tag)
                 if info[1] == 'P03-01':
-                    self.receivePicking(2)
+                    self.receivePicking(tag)
+                    self.receivePicking(tag)
+                    self.receivePicking(tag)
+                    self.receivePicking(tag)
 
     def unload(self, sql: str):
         """
@@ -124,6 +138,7 @@ class Jd(Base):
         re = self.re1(self.url['page']).json()['result']['totalCount']
         return re
 
+    @property
     def charging_count(self):
         """
         统计充电次数
@@ -132,7 +147,14 @@ class Jd(Base):
         numeber = 0
 
         for i in self.re1(self.url['charging_jobs']).json()['result']['jobs']:
-            if i['name'] == "go to charging" and i['status'] == 'finished':
+            st = ' '.join([i['readyTime'].split('+')[0].split('T')[0], i['readyTime'].split('+')[0].split('T')[1]])
+            timestamps = self.mktimes(st)
+
+            start_timestamps = self.mktimes(self.startTime)
+
+            end_timestamps = self.mktimes(self.endTime)
+
+            if start_timestamps < timestamps < end_timestamps:
                 numeber += 1
         return numeber
 
@@ -266,7 +288,7 @@ class Jd(Base):
                    f':00）\n' \
                    f'\t     结束时间（{self.getDateTime()}）\n' \
                    f'\t     共执行任务数量：{len(number)}单\n' \
-                   f'\t     共完成充电任务：{self.charging_count()}'
+                   f'\t     共完成充电任务：{self.charging_count}'
             runEmail(info, ''.join(['【京东2.0水饮仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
             print('测试报告已发出，更新状态')
             self.operate_ini('status', 'email_status', 'True', types=0)
@@ -274,20 +296,49 @@ class Jd(Base):
             print('重新开始，初始化状态')
             self.operate_ini('status', 'email_status', 'False', types=0)
 
-    def select_task_status(self, robotcode=None, status=None):
+    def select_task_status(self, robotcode=None, status=None, pageSize=10):
         """
         查询指定AMR状态的任务信息
+        :param pageSize: 条数
         :param robotcode: 机器人id
         :param status: 状态
         :return: 指定amr编号任务信息json
         """
-        self.url['page']['json'] = {"robotCode": robotcode,"status": status, "pageNumber": 1, "pageSize": 10}
+        self.url['page']['json'] = {"robotCode": robotcode, "status": status, "pageNumber": 1, "pageSize": pageSize}
         return self.re1(self.url['page']).json()
 
+    def conut_run_task_time(self):
+        """统计运行时间"""
+        count_time = {}
+        strs = ''
+        t = time.mktime(datetime.date.today().timetuple())
+        startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t - 21600))
+        endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t + 64800))
+        for i in self.select(
+                "SELECT robot_code,picking_start_time,finish_time FROM t_picking "
+                f"where create_time> '{startTime}' and create_time<'{endTime}' and `status`=500 ;"
+                , fetch=False):
 
+            if i[0] in count_time:
+                count_time[i[0]][0] = count_time[i[0]][0] + int(i[2].timestamp()) - int(i[1].timestamp())
+                count_time[i[0]][1] += 1
+            else:
+                count_time[i[0]] = [int(i[2].timestamp()) - int(i[1].timestamp())]
+                count_time[i[0]].append(1)
+
+        for j in count_time:
+            seconds = count_time[j][0] % (24 * 3600)
+            hour = count_time[j][0] // 3600
+            count_time[j][0] %= 3600
+            minutes = count_time[j][0] // 60
+            seconds %= 60
+            count_time[j][0] = "%02d:%02d:%02d" % (hour, minutes, seconds)
+
+        for k in count_time:
+            strs += f'\t     AMR:{k} | 共执行{count_time[k][0]} | 任务数量：{count_time[k][1]}单\n'
+        return strs
 
 
 if __name__ == '__main__':
-    auto = Jd('mysql', 'test_水印', 'jd_multitask_api', 'sy_test')
-    auto.select_task_status('014')
-    # print(auto.erms_robot_id('014'))
+    auto = Jd('sy_mysql_prod', 'test_水印', 'jd_multitask_api', 'sy_prod')
+    print(auto.charging_count)

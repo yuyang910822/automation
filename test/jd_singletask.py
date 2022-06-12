@@ -63,8 +63,11 @@ class Jd_singletask(Jd):
                        f':00）\n' \
                        f'\t     结束时间（{self.getDateTime()}）\n' \
                        f'\t     共执行任务数量：{len(number)}单\n' \
-                       f'\t     共完成充电任务：{self.charging_count()}'
-                runEmail(info, ''.join(['【京东2.0水饮仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
+                       f'\t     共完成充电任务：{self.charging_count}\n' \
+                       f'\n' \
+                       f'AMR执行详细信息如下：\n' \
+                       f'{self.conut_run_task_time()}'
+                runEmail(info, ''.join(['【京东2.0标签拣选】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
                 print('测试报告已发出，更新状态')
                 self.operate_ini('status', 'singletask_email_status', 'True', types=0)
             elif self.operate_ini('status', 'singletask_email_status') == 'True' and self.getTime() != 18:

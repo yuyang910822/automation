@@ -4,7 +4,8 @@
 # @File : runtiest.py
 import configparser
 import os
-import time
+import time,datetime
+
 import requests
 
 from requests import Response
@@ -42,6 +43,9 @@ class Base(Mysql):
                 self.url[url]['url'] = str(self.url[url]['url']).replace('/erms/', localhost[2])
             else:
                 self.error(f"未替换：{self.url[url]['url']}")
+        self.t = time.mktime(datetime.date.today().timetuple())
+        self.startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.t - 21600))
+        self.endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.t + 64800))
 
     # def re(self, loc):
     #     """
@@ -214,6 +218,15 @@ class Base(Mysql):
         else:
             self.error(f'机器人{robotcode}：未在线')
 
+    def mktimes(self, st):
+        """
+        日期时间转换时间戳
+        :param st 日期时间
+        :return:
+        """
+        dt = time.strptime(st, "%Y-%m-%d %H:%M:%S")
+        t = time.mktime(dt)
+        return t
 
 if __name__ == '__main__':
     f = Base('mysql', '1', 'jd_api', 'sy_test')
