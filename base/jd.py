@@ -336,6 +336,7 @@ class Jd(Base):
 
         for k in count_time:
             strs += f'\t     AMR:{k} | 共执行{count_time[k][0]} | 任务数量：{count_time[k][1]}单\n'
+
         return strs
 
 
