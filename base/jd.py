@@ -150,9 +150,7 @@ class Jd(Base):
             timestamps = self.mktimes(st)
 
             start_timestamps = self.mktimes(self.startTime)
-
             end_timestamps = self.mktimes(self.endTime)
-
             if start_timestamps < timestamps < end_timestamps:
                 numeber += 1
         return numeber
