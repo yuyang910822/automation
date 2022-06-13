@@ -138,7 +138,6 @@ class Jd(Base):
         re = self.re1(self.url['page']).json()['result']['totalCount']
         return re
 
-    @property
     def charging_count(self):
         """
         统计充电次数

@@ -63,7 +63,7 @@ class Jd_singletask(Jd):
                        f':00）\n' \
                        f'\t     结束时间（{self.getDateTime()}）\n' \
                        f'\t     共执行任务数量：{len(number)}单\n' \
-                       f'\t     共完成充电任务：{self.charging_count}\n' \
+                       f'\t     共完成充电任务：{self.charging_count()}单\n' \
                        f'\n' \
                        f'AMR执行详细信息如下：\n' \
                        f'{self.conut_run_task_time()}'
