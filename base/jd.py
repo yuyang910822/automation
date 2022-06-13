@@ -148,7 +148,6 @@ class Jd(Base):
         for i in self.re1(self.url['charging_jobs']).json()['result']['jobs']:
             st = ' '.join([i['readyTime'].split('+')[0].split('T')[0], i['readyTime'].split('+')[0].split('T')[1]])
             timestamps = self.mktimes(st)
-
             start_timestamps = self.mktimes(self.startTime)
             end_timestamps = self.mktimes(self.endTime)
             if start_timestamps < timestamps < end_timestamps:
