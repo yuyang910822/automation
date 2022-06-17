@@ -43,10 +43,6 @@ class Jd_singletask(Jd):
                         "t1.id=t2.task_id and t1.biz_type='PICK_UNLOADING' and t1.`status`=200 and t2.`status`=100 "
                         "and t2.arrival_time is not null;")
 
-            # 投线点异常AMR
-
-            # 空闲AMR下单
-
             if self.getTime() == 18 and self.operate_ini('status', 'singletask_email_status') == 'False':
                 t = time.mktime(datetime.date.today().timetuple())
                 startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t - 21600))

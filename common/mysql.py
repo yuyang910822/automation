@@ -42,7 +42,6 @@ class Mysql(Log):
         """""
         try:
             self.c.execute(sql)
-
             self.db.commit()
         except BaseException as e:
             self.error(f'{e}')

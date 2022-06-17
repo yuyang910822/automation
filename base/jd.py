@@ -78,20 +78,57 @@ class Jd(Base):
                 self.debug(type(result.json()['status']['statusCode']))
                 if result.json()['status']['statusCode'] != 0:
                     self.warning('当前任务为多任务，入参加入taskNo')
-                    picking_id = self.select(f"select id,origin_wave_no from t_picking where parent_task_no = (select "
-                                             f"origin_wave_no from t_picking where `status` =200 and robot_code={info[0]})",
-                                             fetch=False)
-                    self.debug(f'当前机器人：{info[0]}对应的pickingid：{picking_id}')
-                    for id in picking_id:
-                        stationname = str(self.select(f'SELECT t_picking_detail.station_name from t_picking_detail '
-                                                      f'where picking_id ={id[0]}', fetch=False))
-                        if info[1] in stationname:
-                            self.url['pickStationFinish']['json']['taskList'].append(
-                                {"taskNo": id[1], "passagewayTaskNo": "P1647342851-巷道拣货点0",
-                                 "pickingFlag": "0"})
+                    self.url['pickStationFinish']['json']['taskList'][0]['taskNo'] = \
+                        jsonpath.jsonpath(self.select_task_status(info[0]), "$..originWaveNo")[0]
                     self.re1(self.url['pickStationFinish'])
+                #     self.warning('当前任务为多任务，入参加入taskNo')
+                #     picking_id = self.select(f"select id,origin_wave_no from t_picking where parent_task_no = (select "
+                #                              f"origin_wave_no from t_picking where `status` =200 and robot_code={info[0]})",
+                #                              fetch=False)
+                #     self.debug(f'当前机器人：{info[0]}对应的pickingid：{picking_id}')
+                #     for id in picking_id:
+                #         stationname = str(self.select(f'SELECT t_picking_detail.station_name from t_picking_detail '
+                #                                       f'where picking_id ={id[0]}', fetch=False))
+                #         if info[1] in stationname:
+                #             self.url['pickStationFinish']['json']['taskList'].append(
+                #                 {"taskNo": id[1], "passagewayTaskNo": "P1647342851-巷道拣货点0",
+                #                  "pickingFlag": "0"})
+                #     self.re1(self.url['pickStationFinish'])
                 if info[1] == '08-01':
                     self.receivePicking1(tag)
+                # if info[1] == 'P03-01':
+                #     self.receivePicking(tag)
+                #     self.receivePicking(tag)
+                #     self.receivePicking(tag)
+                #     self.receivePicking(tag)
+
+    def picking1(self, sql: str, tag=1):
+        """
+        拣货确认且最后一个拣货点拣货完成下单
+        :param sql: 查询到达拣货点
+        :param tag: 下单类型
+        :return:
+        """
+        picking_arrive = self.select(sql, fetch=False)
+        if len(picking_arrive) >= 1:
+            self.info(f'到达拣货点信息：{picking_arrive}')
+            for info in picking_arrive:
+                self.url['pickStationFinish']['json']['taskList'].clear()
+                time.sleep(2)
+                self.url['pickStationFinish']['json']['robotCode'] = info[0]
+                self.url['pickStationFinish']['json']['stationName'] = info[1]
+                picking_id = self.select(f"select id,origin_wave_no from t_picking where parent_task_no = (select "
+                                             f"origin_wave_no from t_picking where `status` =200 and robot_code={info[0]})",
+                                             fetch=False)
+                self.debug(f'当前机器人：{info[0]}对应的pickingid：{picking_id}')
+                for id in picking_id:
+                    stationname = str(self.select(f'SELECT t_picking_detail.station_name from t_picking_detail '
+                                                      f'where picking_id ={id[0]}', fetch=False))
+                    if info[1] in stationname:
+                        self.url['pickStationFinish']['json']['taskList'].append(
+                                {"taskNo": id[1], "passagewayTaskNo": "P1647342851-巷道拣货点0",
+                                 "pickingFlag": "0"})
+                self.re1(self.url['pickStationFinish'])
                 if info[1] == 'P03-01':
                     self.receivePicking(tag)
                     self.receivePicking(tag)
@@ -146,6 +183,7 @@ class Jd(Base):
         numeber = 0
 
         for i in self.re1(self.url['charging_jobs']).json()['result']['jobs']:
+            print(i)
             st = ' '.join([i['readyTime'].split('+')[0].split('T')[0], i['readyTime'].split('+')[0].split('T')[1]])
             timestamps = self.mktimes(st)
             start_timestamps = self.mktimes(self.startTime)

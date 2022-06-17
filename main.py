@@ -1,7 +1,2 @@
-import time
-
-
-
-time_str = "2022-03-18 10:54:00"
-time_stamp = time.mktime(time.strptime(time_str, '%Y-%m-%d %H:%M:%S'))
-print(time_stamp)
+['/home/ld/PycharmProjects/automation/test', '/usr/lib/python36.zip', '/usr/lib/python3.6', '/usr/lib/python3.6/lib-dynload', '/home/ld/.local/lib/python3.6/site-packages', '/usr/local/lib/python3.6/dist-packages', '/usr/lib/python3/dist-packages', '/home/ld/.local/lib/python3.6/site-packages', '/home/ld/PycharmProjects/automation', '/usr/bin/python3']
+['/home/ld/PycharmProjects/automation/test', '/usr/lib/python36.zip', '/usr/lib/python3.6', '/usr/lib/python3.6/lib-dynload', '/home/ld/.local/lib/python3.6/site-packages', '/usr/local/lib/python3.6/dist-packages', '/usr/lib/python3/dist-packages', '/home/ld/.local/lib/python3.6/site-packages', '/home/ld/PycharmProjects/automation', '/usr/bin/python3']

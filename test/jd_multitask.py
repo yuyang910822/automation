@@ -51,9 +51,9 @@ class Jd_multitask(Jd):
             self.exceptionHandle()
 
             # 拣货点确认
-            self.picking('select t1.robot_code as robotCode,t2.internal_station_name as stationName from t_robot_task '
-                         't1,t_robot_task_detail t2 where t1.id=t2.task_id and t1.biz_type="PICK_LOCATION" and '
-                         't1.`status`=200 and t2.`status`=100 and t2.arrival_time is not null', tag=2)
+            self.picking1('select t1.robot_code as robotCode,t2.internal_station_name as stationName from t_robot_task '
+                          't1,t_robot_task_detail t2 where t1.id=t2.task_id and t1.biz_type="PICK_LOCATION" and '
+                          't1.`status`=200 and t2.`status`=100 and t2.arrival_time is not null', tag=2)
 
             # if self.getTime() == 18 and self.operate_ini('status', 'multitask_email_status') == 'False':
             #     t = time.mktime(datetime.date.today().timetuple())
@@ -84,4 +84,3 @@ class Jd_multitask(Jd):
 if __name__ == '__main__':
     auto = Jd_multitask('mysql', 'multitask', 'jd_multitask_api', 'sy_test')
     auto.jd_multitask()
-
