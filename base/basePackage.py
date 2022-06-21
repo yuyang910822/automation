@@ -4,15 +4,15 @@
 # @File : runtiest.py
 import configparser
 import os
-import time,datetime
-
+import time
+import datetime
+import jsonpath
 import requests
 
 from requests import Response
 from common.mysql import Mysql
 from common.path import mysql_dir, url_dir, url_config_dir, config_ini_dir
 from common.readYaml import readYaml
-from jira_remind.issou import *
 
 
 class Base(Mysql):
@@ -229,5 +229,4 @@ class Base(Mysql):
 
 if __name__ == '__main__':
     f = Base('mysql', '1', 'jd_api', 'sy_test')
-    print(select_issou())
-    f.vx_inform(select_issou())
+

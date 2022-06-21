@@ -4,7 +4,7 @@
 # @File : jd.py
 import sys
 
-from common.runemail import runEmail
+from common.runemail import runEmail_text
 
 from base.basePackage import Base
 
