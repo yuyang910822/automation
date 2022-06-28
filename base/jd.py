@@ -48,8 +48,8 @@ class Jd(Base):
         :return:
         """
         # 生成随机储位任务
-
-        data = ['P01-01', 'P02-01', 'P03-01']
+        time.sleep(1)
+        data = ['01-01']
         t = self.getTimeStamp()
         self.url['receivePicking']['json']['taskNo'] = t
         self.url['receivePicking']['json']['tagType'] = tag
@@ -57,27 +57,30 @@ class Jd(Base):
         self.url['receivePicking']['json']['detailList'] = data
         self.re1(self.url['receivePicking'])
 
-    def picking(self, sql: str, tag=1):
+    def picking(self, sql: str, tag=1, station=None):
         """
         拣货确认且最后一个拣货点拣货完成下单
+        :param station: 点位名称
         :param sql: 查询到达拣货点
         :param tag: 下单类型
         :return:
         """
         picking_arrive = self.select(sql, fetch=False)
+        self.info(f'到达拣货点信息：{picking_arrive}')
         if len(picking_arrive) >= 1:
             self.info(f'到达拣货点信息：{picking_arrive}')
             for info in picking_arrive:
-                self.url['pickStationFinish']['json']['taskList'].clear()
+                # # 兼容标签拣选校验不能带
+                # self.url['pickStationFinish']['json']['taskList'].clear()
                 time.sleep(2)
                 self.url['pickStationFinish']['json']['robotCode'] = info[0]
                 self.url['pickStationFinish']['json']['stationName'] = info[1]
                 result = self.re1(self.url['pickStationFinish'])
                 # 兼容多任务版本确认拣货需要传递taskList
-                self.debug(result.json()['status']['statusCode'])
-                self.debug(type(result.json()['status']['statusCode']))
+
                 if result.json()['status']['statusCode'] != 0:
                     self.warning('当前任务为多任务，入参加入taskNo')
+                    # 更新tasklist的taskNo值
                     self.url['pickStationFinish']['json']['taskList'][0]['taskNo'] = \
                         jsonpath.jsonpath(self.select_task_status(info[0]), "$..originWaveNo")[0]
                     self.re1(self.url['pickStationFinish'])
@@ -96,11 +99,11 @@ class Jd(Base):
                 #     self.re1(self.url['pickStationFinish'])
                 if info[1] == '08-01':
                     self.receivePicking1(tag)
-                # if info[1] == 'P03-01':
-                #     self.receivePicking(tag)
-                #     self.receivePicking(tag)
-                #     self.receivePicking(tag)
-                #     self.receivePicking(tag)
+                if info[1] == '01-01':
+                    self.receivePicking(tag)
+                    self.receivePicking(tag)
+                    self.receivePicking(tag)
+                    self.receivePicking(tag)
 
     def picking1(self, sql: str, tag=1):
         """

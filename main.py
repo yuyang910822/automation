@@ -1,0 +1,3 @@
+f =   {'method': 'post', 'url': 'http://10.3.7.244:8023/rpm-server/jd/picking/pickStationFinish', 'headers': {'Content-Type': 'application/json', 'token': 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTYzMzYxNzAsImp0aSI6IkJfaGNyQzJnbC1VVmlRWHRmV1FtVVEiLCJpYXQiOjE2NTYzMTgxNzAsInVzZXIiOiJ7XCJpZFwiOjMwMDEsXCJ1c2VyTmFtZVwiOlwiamRfYWRtaW5cIixcInJlYWxOYW1lXCI6XCLkuqzkuJxhZG1pblwiLFwiaXNJbml0UGFzc3dvcmRcIjoxLFwiZGV2aWNlVHlwZVwiOjEsXCJ0eXBlXCI6NSxcImN1c3RvbWVySWRcIjozMDAxLFwiY3VzdG9tZXJOYW1lXCI6XCLkuqzkuJxcIixcInBhcmVudElkXCI6MX0ifQ.vifVCGnaRnzOE8z49jMIFAml-y51oIKsS-ZdEGLx4Jg'}, 'json': {'robotCode': '004', 'stationName1': '3AA011', 'taskList': [{1:2}], 'stationName': '01-01'}}
+
+print(f['json']['taskList'])

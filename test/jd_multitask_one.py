@@ -9,7 +9,7 @@ import time, datetime
 import requests
 
 from base.jd import Jd
-from common.runemail import runEmail
+from common.runemail import runEmail_text
 
 
 class Jd_multitask(Jd):
@@ -48,6 +48,7 @@ class Jd_multitask(Jd):
             #         self.agent_robot_finish(info['robotCode'])
 
             # 异常处理
+            # 处理异常
             self.exceptionHandle()
 
             # 拣货点确认
@@ -55,6 +56,7 @@ class Jd_multitask(Jd):
                          't1,t_robot_task_detail t2 where t1.id=t2.task_id and t1.biz_type="PICK_LOCATION" and '
                          't1.`status`=200 and t2.`status`=100 and t2.arrival_time is not null', tag=2)
 
+            # 邮件发送
             if self.getTime() == 18 and self.operate_ini('status', 'multitask_email_status1') == 'False':
                 t = time.mktime(datetime.date.today().timetuple())
                 startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t - 21600))
@@ -72,7 +74,7 @@ class Jd_multitask(Jd):
                        f'\t     结束时间（{self.getDateTime()}）\n' \
                        f'\t     共执行任务数量：{len(number)}单\n' \
                        f'\t     共完成充电任务：{self.charging_count}'
-                runEmail(info, ''.join(['【京东2.0KK仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
+                runEmail_text(info, ''.join(['【京东2.0KK仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
                 print('测试报告已发出，更新状态')
                 self.operate_ini('status', 'multitask_email_status1', 'True', types=0)
             elif self.operate_ini('status', 'multitask_email_status1') == 'True' and self.getTime() != 18:
@@ -82,6 +84,6 @@ class Jd_multitask(Jd):
 
 
 if __name__ == '__main__':
-    auto = Jd_multitask('mysql', 'multitask', 'jd_multitask_api', 'sy_test')
+    auto = Jd_multitask('sy_mysql_prod', 'multitask', 'jd_multitask_api', 'sy_prod')
     auto.jd_multitask()
 

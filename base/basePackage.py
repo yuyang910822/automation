@@ -40,25 +40,29 @@ class Base(Mysql):
                 self.url[url]['url'] = str(self.url[url]['url']).replace('/rcs/', localhost[1])
             elif 'erms' in self.url[url]['url']:
                 self.url[url]['url'] = str(self.url[url]['url']).replace('/erms/', localhost[2])
-            else:
-                self.error(f"未替换：{self.url[url]['url']}")
-        self.t = time.mktime(datetime.date.today().timetuple())
-        self.startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.t - 21600))
-        self.endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.t + 64800))
 
-    # def re(self, loc):
-    #     """
-    #     通过字典
-    #     :param loc: 接口依赖数据：请求方式，请求地址，请求头，请求体
-    #     :return:
-    #     """
-    #     method, url, headers, json = loc
-    #     self.log.info(f'接口入参：\n{method}，{url}\n{headers}\n{json}')
-    #     r = requests.request(method=method, url=url, headers=headers, json=json)
-    #     self.log.info(f'响应体:{r.json()}')
-    #     return r
+            # 正常业务常见无需提前到达，弃用
+            # else:
+            #     self.error(f"未替换：{self.url[url]['url']}")
 
-    def re1(self, info: dict,tag=1) -> Response:
+    def timestamp_zero(self):
+        """
+        时间戳--零时
+        :return:
+        """
+        return time.mktime(datetime.date.today().timetuple())
+
+    def period_of_time(self, s):
+        """
+        换算指定时间段(秒)：年月日时分秒
+        分：60秒
+        时：3600秒
+        :param s: 秒
+        :return:
+        """
+        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.timestamp_zero() - s))
+
+    def re1(self, info: dict, tag=1) -> Response:
         """
         封装接口请求
         :param 请求信息
@@ -66,11 +70,17 @@ class Base(Mysql):
         """
         times = int(time.time() * 1000)
 
-        if 'forwardx.com' in info['url']:
+        # if 'forwardx.com' in info['url']:
+        #     info['headers']['token'] = jsonpath.jsonpath(requests.request(**self.url['login']).json(), '$..token')[0]
+
+        # 指定条件不在url中,既调用时实时获取token
+        if '8080' not in info['url'] and '7000' not in info['url']:
             info['headers']['token'] = jsonpath.jsonpath(requests.request(**self.url['login']).json(), '$..token')[0]
+
         self.info(f'{str(info["url"])}--|{times}|>>>>>{info["json"]}')
         r = requests.request(**info)
         self.info(f'{str(info["url"]).split("/")[-1]}--|{times}|<<<<<{r.json()}')
+
         return r
 
     def setProperties(self, name: str) -> int:
@@ -85,7 +95,6 @@ class Base(Mysql):
 
     def getToken(self, info: dict) -> str:
         """
-
         登录获取对应token
         :param info: 请求信息
         :return:
@@ -153,7 +162,6 @@ class Base(Mysql):
             conf.set(section, key, value)
             conf.write(open(config_ini_dir, 'w', encoding='utf-8'))
 
-
     def erms_all_robots_online_info(self):
         """
         获取erms全部在线的机器人信息
@@ -212,7 +220,7 @@ class Base(Mysql):
         ips = self.erms_robot_ip(erms_robot_id)
         if ips is not None:
             self.info('提前到达')
-            self.url['finish']['url'] = self.url['finish']['url'].replace('agent', ':'.join([ips,'7000']))
+            self.url['finish']['url'] = self.url['finish']['url'].replace('agent', ':'.join([ips, '7000']))
             self.re1(self.url['finish'])
         else:
             self.error(f'机器人{robotcode}：未在线')
@@ -227,6 +235,6 @@ class Base(Mysql):
         t = time.mktime(dt)
         return t
 
+
 if __name__ == '__main__':
     f = Base('mysql', '1', 'jd_api', 'sy_test')
-

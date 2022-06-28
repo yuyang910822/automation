@@ -13,7 +13,7 @@
 import time, datetime
 
 from base.jd import Jd
-from common.runemail import runEmail
+from common.runemail import runEmail_text
 
 
 class Jd_singletask(Jd):
@@ -63,7 +63,7 @@ class Jd_singletask(Jd):
                        f'\n' \
                        f'AMR执行详细信息如下：\n' \
                        f'{self.conut_run_task_time()}'
-                runEmail(info, ''.join(['【京东2.0标签拣选】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
+                runEmail_text(info, ''.join(['【京东2.0标签拣选】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
                 print('测试报告已发出，更新状态')
                 self.operate_ini('status', 'singletask_email_status', 'True', types=0)
             elif self.operate_ini('status', 'singletask_email_status') == 'True' and self.getTime() != 18:
@@ -72,6 +72,6 @@ class Jd_singletask(Jd):
 
 
 if __name__ == '__main__':
-    auto = Jd_singletask('sy_mysql_prod', 'test_水印', 'jd_singletask_api', 'sy_prod')
+    auto = Jd_singletask('sy_mysql_prod', 'multitask', 'jd_singletask_api', 'sy_prod')
     auto.sy_atutomationa()
 
