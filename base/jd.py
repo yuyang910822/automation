@@ -49,7 +49,12 @@ class Jd(Base):
         """
         # 生成随机储位任务
         time.sleep(1)
-        data = ['01-01']
+        if tag == 2:
+            data = ['02-01']
+        elif tag == 1:
+            data = ['01-01']
+        else:
+            data = ['03-01']
         t = self.getTimeStamp()
         self.url['receivePicking']['json']['taskNo'] = t
         self.url['receivePicking']['json']['tagType'] = tag
@@ -76,27 +81,15 @@ class Jd(Base):
                 self.url['pickStationFinish']['json']['robotCode'] = info[0]
                 self.url['pickStationFinish']['json']['stationName'] = info[1]
                 result = self.re1(self.url['pickStationFinish'])
-                # 兼容多任务版本确认拣货需要传递taskList
 
+                # 兼容多任务版本确认拣货需要传递taskList
                 if result.json()['status']['statusCode'] != 0:
                     self.warning('当前任务为多任务，入参加入taskNo')
                     # 更新tasklist的taskNo值
                     self.url['pickStationFinish']['json']['taskList'][0]['taskNo'] = \
                         jsonpath.jsonpath(self.select_task_status(info[0]), "$..originWaveNo")[0]
                     self.re1(self.url['pickStationFinish'])
-                #     self.warning('当前任务为多任务，入参加入taskNo')
-                #     picking_id = self.select(f"select id,origin_wave_no from t_picking where parent_task_no = (select "
-                #                              f"origin_wave_no from t_picking where `status` =200 and robot_code={info[0]})",
-                #                              fetch=False)
-                #     self.debug(f'当前机器人：{info[0]}对应的pickingid：{picking_id}')
-                #     for id in picking_id:
-                #         stationname = str(self.select(f'SELECT t_picking_detail.station_name from t_picking_detail '
-                #                                       f'where picking_id ={id[0]}', fetch=False))
-                #         if info[1] in stationname:
-                #             self.url['pickStationFinish']['json']['taskList'].append(
-                #                 {"taskNo": id[1], "passagewayTaskNo": "P1647342851-巷道拣货点0",
-                #                  "pickingFlag": "0"})
-                #     self.re1(self.url['pickStationFinish'])
+
                 if info[1] == '08-01':
                     self.receivePicking1(tag)
                 if info[1] == '01-01':
@@ -133,6 +126,11 @@ class Jd(Base):
                                  "pickingFlag": "0"})
                 self.re1(self.url['pickStationFinish'])
                 if info[1] == 'P03-01':
+                    self.receivePicking(tag)
+                    self.receivePicking(tag)
+                    self.receivePicking(tag)
+                    self.receivePicking(tag)
+                if info[1] == '02-01':
                     self.receivePicking(tag)
                     self.receivePicking(tag)
                     self.receivePicking(tag)

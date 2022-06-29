@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
-# @Time : 2022/6/17 9:39 
+# @Time : 2022/5/26 23:57 
 # @Author : Yu yang
-# @File : jd_multitask_one.py
+# @File : jd_multitask.py
 
 import random
 import time, datetime
@@ -9,7 +9,7 @@ import time, datetime
 import requests
 
 from base.jd import Jd
-from common.runemail import runEmail_text
+from common.runemail import runEmail
 
 
 class Jd_multitask(Jd):
@@ -48,42 +48,41 @@ class Jd_multitask(Jd):
             #         self.agent_robot_finish(info['robotCode'])
 
             # 异常处理
-            # 处理异常
             self.exceptionHandle()
 
             # 拣货点确认
-            self.picking('select t1.robot_code as robotCode,t2.internal_station_name as stationName from t_robot_task '
-                         't1,t_robot_task_detail t2 where t1.id=t2.task_id and t1.biz_type="PICK_LOCATION" and '
-                         't1.`status`=200 and t2.`status`=100 and t2.arrival_time is not null', tag=2)
+            self.picking1('select t1.robot_code as robotCode,t2.internal_station_name as stationName from t_robot_task '
+                          't1,t_robot_task_detail t2 where t1.id=t2.task_id and t1.biz_type="PICK_LOCATION" and '
+                          't1.`status`=200 and t2.`status`=100 and t2.arrival_time is not null', tag=2)
 
-            # 邮件发送
-            if self.getTime() == 18 and self.operate_ini('status', 'multitask_email_status1') == 'False':
+            # 投线
+
+            if self.getTime() == 18 and self.operate_ini('status', 'multitask_email_status') == 'False':
                 t = time.mktime(datetime.date.today().timetuple())
                 startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t - 21600))
                 endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t + 64800))
                 number = self.select(
-                    f'SELECT * FROM t_picking WHERE `status` = 500 and create_time>"{startTime}" and  create_time<"{endTime}";',fetch=False)
+                    f'SELECT * FROM t_picking WHERE `status` = 500 and create_time>"{startTime}" and  create_time<"{endTime}";',
+                    fetch=False)
                 print(
                     f'SELECT * FROM t_picking WHERE `status` = 500 and create_time>"{startTime}" and  create_time<"{endTime}";')
                 print('测试报告已发出，更新状态')
                 info = f'Hi all:\n' \
                        f'\n' \
-                       f'\t今日京东KK仓流程稳定性测试完成：\n' \
+                       f'\t今日京东合流流程稳定性测试完成：\n' \
                        f'\t     开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00' \
                        f':00）\n' \
                        f'\t     结束时间（{self.getDateTime()}）\n' \
                        f'\t     共执行任务数量：{len(number)}单\n' \
                        f'\t     共完成充电任务：{self.charging_count}'
-                runEmail_text(info, ''.join(['【京东2.0KK仓】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
+                runEmail(info, ''.join(['【京东2.0合流】--', '稳定性测试' + str(time.strftime("%Y-%m-%d"))]))
                 print('测试报告已发出，更新状态')
-                self.operate_ini('status', 'multitask_email_status1', 'True', types=0)
-            elif self.operate_ini('status', 'multitask_email_status1') == 'True' and self.getTime() != 18:
+                self.operate_ini('status', 'multitask_email_status', 'True', types=0)
+            elif self.operate_ini('status', 'multitask_email_status') == 'True' and self.getTime() != 18:
                 print('重新开始，初始化状态')
-                self.operate_ini('status', 'multitask_email_status1', 'False', types=0)
-
+                self.operate_ini('status', 'multitask_email_status', 'False', types=0)
 
 
 if __name__ == '__main__':
-    auto = Jd_multitask('sy_mysql_prod', 'multitask', 'jd_multitask_api', 'sy_prod')
+    auto = Jd_multitask('mysql', 'multitask', 'jd_multitask_api', 'sy_test')
     auto.jd_multitask()
-

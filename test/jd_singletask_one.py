@@ -54,7 +54,7 @@ class Jd_singletask(Jd):
                 print('测试报告已发出，更新状态')
                 info = f'Hi all:\n' \
                        f'\n' \
-                       f'\t今日京东水饮流程稳定性测试完成：\n' \
+                       f'\t今日京东标签流程稳定性测试完成：\n' \
                        f'\t     开始时间（{(datetime.date.today() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")}|18:00' \
                        f':00）\n' \
                        f'\t     结束时间（{self.getDateTime()}）\n' \
