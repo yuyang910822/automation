@@ -50,9 +50,9 @@ class Jd(Base):
         # 生成随机储位任务
         time.sleep(1)
         if tag == 2:
-            data = ['02-01']
-        elif tag == 1:
             data = ['01-01']
+        elif tag == 1:
+            data = ['02-01']
         else:
             data = ['03-01']
         t = self.getTimeStamp()
@@ -376,5 +376,6 @@ class Jd(Base):
 
 
 if __name__ == '__main__':
-    auto = Jd('sy_mysql_prod', 'test_水印', 'jd_multitask_api', 'sy_prod')
-    print(auto.charging_count)
+    # auto = Jd('sy_mysql_prod', 'test_水印', 'jd_multitask_api', 'sy_prod')
+    auto = Jd('ck_mysql_prod', 'test_水印', 'jd_multitask_api', 'ck_test')
+    auto.receivePicking(2)

@@ -45,6 +45,7 @@ class Base(Mysql):
             # else:
             #     self.error(f"未替换：{self.url[url]['url']}")
 
+
     def timestamp_zero(self):
         """
         时间戳--零时

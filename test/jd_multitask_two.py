@@ -84,5 +84,6 @@ class Jd_multitask(Jd):
 
 
 if __name__ == '__main__':
-    auto = Jd_multitask('sy_mysql_prod', 'multitask', 'jd_multitask_api', 'sy_prod')
+    auto = Jd_multitask('ck_mysql_prod', 'multitask', 'jd_multitask_api', 'ck_test')
+    # auto = Jd_multitask('sy_mysql_prod', 'multitask', 'jd_multitask_api', 'sy_prod')
     auto.jd_multitask()

@@ -1,17 +1,1 @@
-import multiprocessing
-import time
-
-def func():
-
-    pname = multiprocessing.current_process().name
-    pid = multiprocessing.current_process().pid
-    print(f"当前进程id{pid}, 进程名字{pname}")
-
-    for i in range(5):
-        print(pname, pid)
-        time.sleep(1)
-
-    pass
-
-
-print(func())
+{"taskNo": 1657528177755, "priority": 1, "cutOffTime": 1657528777755, "taskType": 1, "splitType": 1, "tagType": 2, "navType": 1, "loadingType": 1, "mapId": "39ec2b22-914e-48e0-b87e-68b76f59035e", "attachInfo": {"mixFlag": 1, "volume": "64973900"}, "detailList": ["01-01"]}
